@@ -1,4 +1,5 @@
 #subspifri.py
+# tnason 2018
 #___________________________________________________________________#
 import matplotlib.pyplot as plt
 from pylab import *
