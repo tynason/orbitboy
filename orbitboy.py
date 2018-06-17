@@ -281,10 +281,10 @@ class Mandel(object):
 
 			# ax9  autocorrelation
 			auto=self.autocorr(raddata)
-			for el in auto: print(el)
-			ax9.set_title('autocorrelation(rad)',loc='left',fontsize=8,color=myturq)
+			ax9.set_title('autocorrelation(rad)',loc='left',fontsize=8,color=mybritegrn)
 			ax9.set_xlim(0,150)
-			ax9.plot(auto,lw=linewid,color=lumend4)
+			ax9.plot(auto[0:150],lw=linewid,color=myyell)
+			#for el in auto: print(el)
 
 			ax10.set_title('rad hist',loc='left',fontsize=8,color=mybritegrn)
 			ax10.set_xlabel('rad',fontsize=8,color=mybritegrn)
@@ -312,7 +312,6 @@ class Mandel(object):
 			data=raddata
 			datalbl='rad'
 			maxfreq=int(kappa/15)
-
 			Fs = 300  # sampling rate - HIGHER = SHARPER PEAK
 			Ts = 1.0/Fs # sampling interval
 			n=kappa-2 # length of the signal
@@ -322,7 +321,6 @@ class Mandel(object):
 			frq1 = frq2[1:int(n/2)] # one side frequency slice
 			Y2 = 2*np.fft.fft(data)/n # fft computing and norm
 			Y1 = Y2[1:int(n/2)]
-
 			ax6.set_title('FT('+datalbl+') vs period   Fsamp=300',loc='left',fontsize=8,color=mybritegrn)
 			ax6.set_xlabel('period',fontsize=8,color=mybritegrn)
 			ax6.set_ylabel('FT('+datalbl+')',fontsize=8,color=mybritegrn)
@@ -331,7 +329,6 @@ class Mandel(object):
 			data=angdata
 			datalbl='ang'
 			maxfreq=int(kappa/15)
-
 			Fs = 300  # sampling rate - HIGHER = SHARPER PEAK
 			Ts = 1.0/Fs # sampling interval
 			n=kappa-2 # length of the signal
@@ -341,17 +338,14 @@ class Mandel(object):
 			frq1 = frq2[1:int(n/2)] # one side frequency slice
 			Y2 = 2*np.fft.fft(data)/n # fft computing and norm
 			Y1 = Y2[1:int(n/2)]
-
 			ax8.set_title('FT('+datalbl+') vs period   Fsamp=300',loc='left',fontsize=8,color=mybritegrn)
 			ax8.set_xlabel('period',fontsize=8,color=mybritegrn)
 			ax8.set_ylabel('FT('+datalbl+')',fontsize=8,color=mybritegrn)
 			ax8.plot(frq1[1:maxfreq],abs(Y1[1:maxfreq]),lw=linewid,color=myorange2)			
 
-
-			data=auto
+			data=auto[0:300]
 			datalbl='power spectrum(rad)'
 			maxfreq=int(kappa/15)
-
 			Fs = 300  # sampling rate - HIGHER = SHARPER PEAK
 			Ts = 1.0/Fs # sampling interval
 			n=kappa-2 # length of the signal
@@ -361,12 +355,10 @@ class Mandel(object):
 			frq1 = frq2[1:int(n/2)] # one side frequency slice
 			Y2 = 2*np.fft.fft(data)/n # fft computing and norm
 			Y1 = Y2[1:int(n/2)]
-
 			ax11.set_title('FT('+datalbl+') vs period   Fsamp=300',loc='left',fontsize=8,color=mybritegrn)
 			ax11.set_xlabel('period',fontsize=8,color=mybritegrn)
 			ax11.set_ylabel('FT('+datalbl+')',fontsize=8,color=mybritegrn)
-			ax11.plot(frq1[1:maxfreq],abs(Y1[1:maxfreq]),lw=linewid,color=myteal)	
-
+			ax11.plot(frq1[1:maxfreq],abs(Y1[1:maxfreq]),lw=linewid,color=myyell2)	
 			#___________________________________________________________________#
 
 			plt.show(block=False);fig.canvas.draw()
