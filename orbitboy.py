@@ -1,5 +1,5 @@
 # orbitboy.py
-# mand155.py
+# mand157.py
 # tnason 2018
 # https://github.com/tynason/orbitboy
 #___________________________________________________________________#
@@ -18,6 +18,10 @@ from mysql.connector import errorcode
 class Mandel(object):
 	def __init__(self,boreme,minbored,xpos,ypos,wid,ht,figsleep,finalsleep):
 		pass
+
+	def autocorr(self,xx):
+		result = np.correlate(xx, xx, mode='full')
+		return result[result.size/2:]
 
 	def getcolor(self):
 		r=np.random.uniform(0,1)
@@ -41,7 +45,9 @@ class Mandel(object):
 			params=[];xdata=[];ydata=[];raddata=[];angdata=[]
 			xstats=[];ystats=[];radstats=[];angstats=[];ang2data=[]
 
-			flip=x=np.random.random_integers(1,5)
+			#flip=x=np.random.random_integers(1,5)
+			flip=5
+
 			if flip==1: # 5 period attractive
 				cx=np.random.uniform(0.355,0.360);cy=np.random.uniform(0.315,0.400)
 			elif flip==2: # 5 period repulsive
@@ -57,9 +63,9 @@ class Mandel(object):
 			#	theta=np.random.uniform(0,2*math.pi);rrr=np.random.uniform(0,0.1)
 			#	cx=(0.25+rrr)*cos(theta)-1;cy=(0.25+rrr)*sin(theta)
 			#___________________________________________________________________#
-			
+
 			xdata.append(cx);ydata.append(cy)
-			
+
 			k=0;c=complex(cx,cy);z=complex(0.0,0.0)
 			while abs(z)<maxrad and k<maxiterrs:
 				k+=1;z=z*z+c
@@ -221,19 +227,19 @@ class Mandel(object):
 			params=result[0]
 			kappa=params[0];p=params[1];q=params[2];boredcount=result[9]
 
+			# if numgrads>kappa, you are trying to plot more slices than there are data points so set lag=1
 			if kappa>numgrads:
 				lag=int(kappa/numgrads)
 			else:
 				lag=1
-			print('kappa,numgrads,lag',kappa,numgrads,lag)
 
-			ang2data=result[10]
 			xdata=result[5];ydata=result[6];raddata=result[7];angdata=result[8]
 			xmin=result[1][0];xmax=result[1][1];ymin=result[2][0];ymax=result[2][1]
 			radmin=result[3][0];radmax=result[3][1]
 			angmin=result[4][0];angmax=result[4][1]
+			ang2data=result[10]
 
-			mytitle='Mandelbrot ' +self.mandfunc+ '  p= '+str(p)+' q= '+str(q)+' kappa= '+str(kappa)
+			mytitle='Mandelbrot ' +self.mandfunc+ '  p= '+str(p)+'  q= '+str(q)+'  kappa= '+str(kappa)+'  maxrad= '+str(maxrad)
 			fig.suptitle(mytitle,fontsize=9,color='#00ff00')
 
 			print('\nSELECTED non-boring p,q after',str(boredcount),'tries:')
@@ -241,6 +247,7 @@ class Mandel(object):
 			print('EXITED AT:')
 			print('\tkappa:',kappa);print('\tminbored:',minbored);print('\tmaxiters:',maxiters)
 			print('\tboreme:',boreme);print('\tnumbins:',numbins);print('\ttrimend:',trimend);print('\tlag:',lag)
+			print('\tnumgrads',numgrads)
 
 			refreshall(self)
 			
@@ -260,25 +267,32 @@ class Mandel(object):
 			
 			ax3.set_title('1/5 - 1/2',loc='left',fontsize=8,color=mybritegrn)
 			ax3.plot(xdata[end2:end3],ydata[end2:end3],lw=linewid,color=lumend3)
-			
+
 			ax4.set_xlim(xmin-0.8*abs(xmin),xmax+0.8*abs(xmax))
 			ax4.set_ylim(ymin-0.8*abs(ymin),ymax+0.8*abs(ymax))
 			ax4.set_title('last 1/10  trimend=0',loc='left',fontsize=8,color=mybritegrn)
 			ax4.plot(xdata[end3:],ydata[end3:],lw=linewid,color=lumend4)
-
+			
 			ax5.set_title('rad vs k',loc='left',fontsize=8,color=mybritegrn)
 			ax7.set_title('ang vs k',loc='left',fontsize=8,color=mybritegrn)
 
-			ax9.set_title('rad vs k last 1/10',loc='left',fontsize=8,color=mybritegrn)
-			ax9.plot(raddata[end4:],lw=linewid,color=myturq)
+			#ax9.set_title('rad vs k last 1/10',loc='left',fontsize=8,color=mybritegrn)
+			#ax9.plot(raddata[end4:],lw=linewid,color=myturq)
+
+			# ax9  autocorrelation
+			auto=self.autocorr(raddata)
+			for el in auto: print(el)
+			ax9.set_title('autocorrelation(rad)',loc='left',fontsize=8,color=myturq)
+			ax9.set_xlim(0,150)
+			ax9.plot(auto,lw=linewid,color=lumend4)
 
 			ax10.set_title('rad hist',loc='left',fontsize=8,color=mybritegrn)
 			ax10.set_xlabel('rad',fontsize=8,color=mybritegrn)
 			ax10.set_ylabel('# in bin',fontsize=8,color=mybritegrn)			
+		
+			#ax11.set_title('ang vs k last 1/10',loc='left',fontsize=8,color=mybritegrn)
+			#ax11.plot(angdata[end4:],lw=linewid,color=myteal)
 
-			ax11.set_title('ang vs k last 1/10',loc='left',fontsize=8,color=mybritegrn)
-			ax11.plot(angdata[end4:],lw=linewid,color=myteal)
-			
 			ax12.set_title('ang hist',loc='left',fontsize=8,color=mybritegrn)
 			ax12.set_xlabel('ang',fontsize=8,color=mybritegrn)
 			ax12.set_ylabel('# in bin',fontsize=8,color=mybritegrn)			
@@ -332,6 +346,27 @@ class Mandel(object):
 			ax8.set_xlabel('period',fontsize=8,color=mybritegrn)
 			ax8.set_ylabel('FT('+datalbl+')',fontsize=8,color=mybritegrn)
 			ax8.plot(frq1[1:maxfreq],abs(Y1[1:maxfreq]),lw=linewid,color=myorange2)			
+
+
+			data=auto
+			datalbl='power spectrum(rad)'
+			maxfreq=int(kappa/15)
+
+			Fs = 300  # sampling rate - HIGHER = SHARPER PEAK
+			Ts = 1.0/Fs # sampling interval
+			n=kappa-2 # length of the signal
+			kk = np.arange(kappa-2)
+			T = kappa/Fs
+			frq2 = kk/T # two sides frequency range
+			frq1 = frq2[1:int(n/2)] # one side frequency slice
+			Y2 = 2*np.fft.fft(data)/n # fft computing and norm
+			Y1 = Y2[1:int(n/2)]
+
+			ax11.set_title('FT('+datalbl+') vs period   Fsamp=300',loc='left',fontsize=8,color=mybritegrn)
+			ax11.set_xlabel('period',fontsize=8,color=mybritegrn)
+			ax11.set_ylabel('FT('+datalbl+')',fontsize=8,color=mybritegrn)
+			ax11.plot(frq1[1:maxfreq],abs(Y1[1:maxfreq]),lw=linewid,color=myteal)	
+
 			#___________________________________________________________________#
 
 			plt.show(block=False);fig.canvas.draw()
@@ -424,18 +459,19 @@ class Mandel(object):
 
 #___________________________________________________________________#
 
-doani=True 	# animate the orbit, rad and ang plots
-doloop=True	# loop thru random orbits, not just one
-dosave=True # save params to DB or file, and save png
-doang=False
+doani=False 	# animate the orbit, rad, ang and histogram plots
+doloop=True		# loop thru random orbits, not just one
+dosave=True 	# save params to DB or file, and save png
+doang=False 	# external angle, not implemented yet
+boreme=False 	# pick a long orbit which escapes at the end
 
-maxiters=52000	# max iterations
+maxiters=5000	# max iterations
 minbored=1000	# minimum non-boring orbit iterations
 maxrad=2.0		# defines the escape criterion
 trimend=4		# omits the final few iterations from some of the plots
 numbins=200		# no. of bins in the histograms
 
-numgrads=20 	# how many slices to plot the animated orbit
+numgrads=3 		# how many slices to plot the animated orbit
 linewid=.6		# line width
 
 figclose=False 	# close after plotting
