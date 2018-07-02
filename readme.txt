@@ -80,6 +80,8 @@ It will also save the params to a mysql db if it exists, else it will save a tex
 
 You can create the mysql db as follows:
 
+	create database mandel;
+
 	create table orbit (
 	orbit_id int not null auto_increment,
 	p varchar(20),
