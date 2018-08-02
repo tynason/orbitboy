@@ -6,8 +6,9 @@ But each point on the map reduces the entire orbit of this point under the itera
 
 The script selects points matching a subjective "boring" criterion: After watching the evolution of various points (the orbits of those points), you see ones that are more interesting, or less boring.
 
-Plenty of orbits are cool to "watch". Bound attractive orbits spiral into a central point. 
-Bound repulsive ones repel endlessly around a central point.
+Plenty of orbits are cool to "watch".
+Bound attractive orbits spiral into a central point. 
+Bound repulsive orbits repel endlessly around a central point.
 
 What interested me were the orbits of points near the boundary of the set, which dally around for a long time before finally being torn to infinity under the tortures of the recursion process.
 
