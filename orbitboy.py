@@ -439,13 +439,13 @@ numgrads=20 	# how many slices to plot the animated orbit
 linewid=.6		# line width
 
 figclose=False 	# close after plotting
-figsleep=0		# various sleep intervals
+figsleep=10		# various sleep intervals
 finalsleep=0
 linesleep=0
 
 wid=1000;ht=700;xpos=10;ypos=100	# window size & posn
 wid=1200;ht=650;xpos=2100;ypos=100
-wid=1800;ht=1100;xpos=0;ypos=0
+wid=1800;ht=1100;xpos=10;ypos=10
 
 mygunmet='#113344';mygunmet2='#052529';myblue='#11aacc';mydkblue='#0000cc'
 myturq='#00ffff';myturq2='#11bbbb';myteal='#00ffcc';myteal2='#00ccaa'
