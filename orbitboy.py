@@ -19,8 +19,7 @@ from mysql.connector import errorcode
 
 class Mandel(object):
 	def __init__(self,boreme,minbored,xpos,ypos,wid,ht,figsleep,finalsleep):
-		pass # need to do proper "self" variables to turn it into a true class
-		# for now it is just a script
+		pass
 
 	def getcolor(self):
 		r=np.random.uniform(0,1)
@@ -247,13 +246,17 @@ class Mandel(object):
 			radavg=result[3][2];raddev=result[3][3]
 			angavg=result[4][2];angdev=result[4][3]
 
-
 			# horizontal print
 			mydata = [kappa,p,q,angerror,maxrad,maxiters,radavg,raddev,angavg,angdev]
 			for item in mydata: print('{: <22}'.format(item),end='')
 			print('\n')
 
-			# vertical print
+
+
+
+			mytitle='Mandelbrot ' +self.mandfunc+ '  p= '+str(p)+'  q= '+str(q)+'  kappa= '+str(kappa)+'  maxrad= '+str(maxrad)
+			fig.suptitle(mytitle,fontsize=9,color='#00ff00')
+
 			print('\nSELECTED non-boring p,q after',str(boredcount),'tries:')
 			print('\tcx='+str(p)+';cy='+str(q))
 			print('EXITED AT:')
@@ -265,10 +268,6 @@ class Mandel(object):
 			print('\tangavg:',angavg)
 			print('\tangdev:',angdev)
 			print('\tangerr:',angerr)			
-
-
-			mytitle='Mandelbrot ' +self.mandfunc+ '  p= '+str(p)+'  q= '+str(q)+'  kappa= '+str(kappa)+'  maxrad= '+str(maxrad)
-			fig.suptitle(mytitle,fontsize=9,color='#00ff00')
 
 			refreshall(self)
 			
@@ -421,7 +420,7 @@ class Mandel(object):
 			if dosave: 
 				# save to DB if it exists
 				try:
-					cnx = mysql.connector.connect(user='root', password='YOURMYSQLPASSWORD', host='127.0.0.1', database='mandel')
+					cnx = mysql.connector.connect(user='root', password='YOURMYSQLPASSWORD**', host='127.0.0.1', database='mandel')
 					cursor = cnx.cursor()
 					add_orbit = 'INSERT INTO orbit (p,q,kappa,maxrad,radavg,raddev,angavg,angdev) ' + 'VALUES ('+str(p)+','+str(q)+','+str(kappa)+','+str(maxrad)+','+str(radavg)+','+str(raddev)+','+str(angavg)+','+str(angdev)+')'
 					cursor.execute(add_orbit)
@@ -454,7 +453,7 @@ class Mandel(object):
 
 #___________________________________________________________________#
 
-doani=True 		# animate the orbit, rad, ang and histogram plots
+doani=True 	# animate the orbit, rad, ang and histogram plots
 doloop=True		# loop thru random orbits, not just one
 dosave=True 	# save params to DB or file, and save png
 doang=False 	# external angle, not implemented yet
@@ -467,17 +466,17 @@ maxrad=2.0		# defines the escape criterion
 trimend=4		# omits the final few iterations from some of the plots
 numbins=200		# no. of bins in the histograms
 
-numgrads=6 		# how many slices to plot the animated orbit
+numgrads=30 		# how many slices to plot the animated orbit
 linewid=.4		# line width
 
 figclose=False 	# close after plotting
-figsleep=0		# various sleep intervals
+figsleep=10		# various sleep intervals
 finalsleep=0
 linesleep=0
 
 wid=1000;ht=700;xpos=10;ypos=100	# window size & posn
 wid=1200;ht=650;xpos=2100;ypos=100
-wid=1800;ht=1100;xpos=0;ypos=0
+wid=1800;ht=1100;xpos=80;ypos=80
 
 mygunmet='#113344';mygunmet2='#052529';myblue='#11aacc';mydkblue='#0000cc'
 myturq='#00ffff';myturq2='#11bbbb';myteal='#00ffcc';myteal2='#00ccaa'
@@ -553,6 +552,15 @@ cx=-0.0170723831006;cy=0.639306902532
 
 # MULTIPLE FLUTES
 cx=-0.660523088721;cy=0.33339541171
+
+# starts out like 4, widens to circle
+cx=-0.656444674147;cy=-0.341203474013
+
+# starts out flutes, widens to circle
+cx=-0.68943228887;cy=-0.277715066752
+
+# 18 star
+cx=-0.669024875506;cy=-0.350659130696
 
 # OTHER BUDS:
 2 -0.75 1.22464679915e-16
