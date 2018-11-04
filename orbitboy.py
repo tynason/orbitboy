@@ -1,6 +1,8 @@
+#!/usr/bin/python3
+# or /usr/bin/env python3
+#
 # orbitboy.py
-# mand155.py
-# tnason 2018
+# ted nason 2018
 # https://github.com/tynason/orbitboy
 #___________________________________________________________________#
 import matplotlib.pyplot as plt
@@ -17,7 +19,8 @@ from mysql.connector import errorcode
 
 class Mandel(object):
 	def __init__(self,boreme,minbored,xpos,ypos,wid,ht,figsleep,finalsleep):
-		pass
+		pass # need to do proper "self" variables to turn it into a true class
+		# for now it is just a script
 
 	def getcolor(self):
 		r=np.random.uniform(0,1)
@@ -37,11 +40,14 @@ class Mandel(object):
 		boredcount=0 
 		boring=True	# assume it's boring
 		while contin:
+			angerror='none'
 			boredcount+=1
 			params=[];xdata=[];ydata=[];raddata=[];angdata=[]
 			xstats=[];ystats=[];radstats=[];angstats=[];ang2data=[]
 
-			flip=x=np.random.random_integers(1,5)
+			#flip=x=np.random.random_integers(1,5)
+			flip=5
+
 			if flip==1: # 5 period attractive
 				cx=np.random.uniform(0.355,0.360);cy=np.random.uniform(0.315,0.400)
 			elif flip==2: # 5 period repulsive
@@ -57,9 +63,9 @@ class Mandel(object):
 			#	theta=np.random.uniform(0,2*math.pi);rrr=np.random.uniform(0,0.1)
 			#	cx=(0.25+rrr)*cos(theta)-1;cy=(0.25+rrr)*sin(theta)
 			#___________________________________________________________________#
-			
+
 			xdata.append(cx);ydata.append(cy)
-			
+
 			k=0;c=complex(cx,cy);z=complex(0.0,0.0)
 			while abs(z)<maxrad and k<maxiterrs:
 				k+=1;z=z*z+c
@@ -122,6 +128,12 @@ class Mandel(object):
 							vB=([(lineB[0][0]-lineB[1][0]),(lineB[0][1]-lineB[1][1])])
 							dot_prod=dot(vA,vB);magA=dot(vA,vA)**0.5;magB=dot(vB,vB)**0.5
 
+							if abs(magA)<1e-8:
+								angerror='magA'
+								print(angerror); break
+							if abs(magB)<1e-8:
+								print('magB=0'); break
+
 							argg=dot_prod/magB/magA
 							if abs(argg)>1:
 								print('arccos!!!!',argg)
@@ -132,7 +144,7 @@ class Mandel(object):
 							ang2data.append(ang_deg)
 						ang2data=ang2data[1:]
 
-				params=[k,cx,cy]
+				params=[k,cx,cy,angerror]
 				xmin=min(xdata[:k-trimend]);xmax=max(xdata[:k-trimend]);xavg=mean(xdata);xdev=std(xdata);xstats=[xmin,xmax,xavg,xdev]
 				ymin=min(ydata[:k-trimend]);ymax=max(ydata[:k-trimend]);yavg=mean(ydata);ydev=std(ydata);ystats=[ymin,ymax,yavg,ydev]
 				radmin=min(raddata);radmax=max(raddata);radavg=mean(raddata);raddev=std(raddata);radstats=[radmin,radmax,radavg,raddev]
@@ -219,28 +231,44 @@ class Mandel(object):
 			alumen=lumen[::-1]
 
 			params=result[0]
-			kappa=params[0];p=params[1];q=params[2];boredcount=result[9]
+			kappa=params[0];p=params[1];q=params[2];boredcount=result[9];angerr=params[3]
 
+			# if numgrads>kappa, you are trying to plot more slices than there are data points so set lag=1
 			if kappa>numgrads:
 				lag=int(kappa/numgrads)
 			else:
 				lag=1
-			print('kappa,numgrads,lag',kappa,numgrads,lag)
 
-			ang2data=result[10]
 			xdata=result[5];ydata=result[6];raddata=result[7];angdata=result[8]
 			xmin=result[1][0];xmax=result[1][1];ymin=result[2][0];ymax=result[2][1]
 			radmin=result[3][0];radmax=result[3][1]
 			angmin=result[4][0];angmax=result[4][1]
+			ang2data=result[10]
+			radavg=result[3][2];raddev=result[3][3]
+			angavg=result[4][2];angdev=result[4][3]
 
-			mytitle='Mandelbrot ' +self.mandfunc+ '  p= '+str(p)+' q= '+str(q)+' kappa= '+str(kappa)
-			fig.suptitle(mytitle,fontsize=9,color='#00ff00')
 
+			# horizontal print
+			mydata = [kappa,p,q,angerror,maxrad,maxiters,radavg,raddev,angavg,angdev]
+			for item in mydata: print('{: <22}'.format(item),end='')
+			print('\n')
+
+			# vertical print
 			print('\nSELECTED non-boring p,q after',str(boredcount),'tries:')
 			print('\tcx='+str(p)+';cy='+str(q))
 			print('EXITED AT:')
 			print('\tkappa:',kappa);print('\tminbored:',minbored);print('\tmaxiters:',maxiters)
 			print('\tboreme:',boreme);print('\tnumbins:',numbins);print('\ttrimend:',trimend);print('\tlag:',lag)
+			print('\tnumgrads',numgrads)
+			print('\tradavg:',radavg)
+			print('\traddev:',raddev)
+			print('\tangavg:',angavg)
+			print('\tangdev:',angdev)
+			print('\tangerr:',angerr)			
+
+
+			mytitle='Mandelbrot ' +self.mandfunc+ '  p= '+str(p)+'  q= '+str(q)+'  kappa= '+str(kappa)+'  maxrad= '+str(maxrad)
+			fig.suptitle(mytitle,fontsize=9,color='#00ff00')
 
 			refreshall(self)
 			
@@ -388,12 +416,14 @@ class Mandel(object):
 			nice.append(params);xnice.append(params[1]);ynice.append(params[2])
 			intfile=str(kappa)+'_'+str(p)+'_'+str(q)+'.txt'
 
+			#print xstats +++++++++++++++++++++++++++++++++++++++++
+
 			if dosave: 
 				# save to DB if it exists
 				try:
-					cnx = mysql.connector.connect(user='root', password='YOURMYSQLPW', host='127.0.0.1', database='mandel')
+					cnx = mysql.connector.connect(user='root', password='YOURMYSQLPASSWORD', host='127.0.0.1', database='mandel')
 					cursor = cnx.cursor()
-					add_orbit = 'INSERT INTO orbit (p,q,kappa,maxrad) ' + 'VALUES ('+str(p)+','+str(q)+','+str(kappa)+','+str(maxrad)+')'
+					add_orbit = 'INSERT INTO orbit (p,q,kappa,maxrad,radavg,raddev,angavg,angdev) ' + 'VALUES ('+str(p)+','+str(q)+','+str(kappa)+','+str(maxrad)+','+str(radavg)+','+str(raddev)+','+str(angavg)+','+str(angdev)+')'
 					cursor.execute(add_orbit)
 					cnx.commit()
 					cursor.close()
@@ -424,28 +454,30 @@ class Mandel(object):
 
 #___________________________________________________________________#
 
-doani=True 	# animate the orbit, rad and ang plots
-doloop=True	# loop thru random orbits, not just one
-dosave=True # save params to DB or file, and save png
-doang=False
+doani=True 		# animate the orbit, rad, ang and histogram plots
+doloop=True		# loop thru random orbits, not just one
+dosave=True 	# save params to DB or file, and save png
+doang=False 	# external angle, not implemented yet
+boreme=False 	# pick a long orbit which escapes at the end
+angerror='none'
 
 maxiters=52000	# max iterations
-minbored=1000	# minimum non-boring orbit iterations
+minbored=1200	# minimum non-boring orbit iterations
 maxrad=2.0		# defines the escape criterion
 trimend=4		# omits the final few iterations from some of the plots
 numbins=200		# no. of bins in the histograms
 
-numgrads=20 	# how many slices to plot the animated orbit
-linewid=.6		# line width
+numgrads=6 		# how many slices to plot the animated orbit
+linewid=.4		# line width
 
 figclose=False 	# close after plotting
-figsleep=10		# various sleep intervals
+figsleep=0		# various sleep intervals
 finalsleep=0
 linesleep=0
 
 wid=1000;ht=700;xpos=10;ypos=100	# window size & posn
 wid=1200;ht=650;xpos=2100;ypos=100
-wid=1800;ht=1100;xpos=10;ypos=10
+wid=1800;ht=1100;xpos=0;ypos=0
 
 mygunmet='#113344';mygunmet2='#052529';myblue='#11aacc';mydkblue='#0000cc'
 myturq='#00ffff';myturq2='#11bbbb';myteal='#00ffcc';myteal2='#00ccaa'
