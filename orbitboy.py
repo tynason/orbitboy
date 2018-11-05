@@ -119,6 +119,7 @@ class Mandel(object):
 						print('arctan!!!!')
 					angdata.append(ang)
 				
+					angerror='none'
 					if doang:
 						for n in range(0,k-2):  # internal angle; needs TRY EXCEPT
 							point1=xdata[n],ydata[n];point2=xdata[n+1],ydata[n+1];point3=xdata[n+2],ydata[n+2]
@@ -246,17 +247,44 @@ class Mandel(object):
 			radavg=result[3][2];raddev=result[3][3]
 			angavg=result[4][2];angdev=result[4][3]
 
-			# horizontal print
-			mydata = [kappa,p,q,angerror,maxrad,maxiters,radavg,raddev,angavg,angdev]
-			for item in mydata: print('{: <22}'.format(item),end='')
-			print('\n')
+
+			#___________________________________________________________________#
+
+			# let's print some stuff
+
+			# full orbit stats print
+			if dodata:
+				###################### PRINT HEADER ######################
+				print('\n')
+				myheader = ['kappa','n','xdata[n]','ydata[n]']
+				for item in myheader: print('{: <22}'.format(item),end='')
+				print('\n',end='')
+				print('+'*100)
+
+				###################### PRINT DATA IN CHUNKS ######################
+				start=0
+				end=chunk
+				while end<=kappa:
+					for item in myheader: print('{: <22}'.format(item),end='')
+					print('\n',end='')
+					print('+'*100)
+
+					for n in range(start,end):
+						mydata = [kappa,n,xdata[n],ydata[n]]
+						for item in mydata: print('{: <22}'.format(item),end='')
+						print('\n',end='')
+						time.sleep(linesleep)
+
+					if end==kappa:break
+					time.sleep(chunksleep)
+					start+=chunk
+					end+=chunk
+					if end>kappa: end=kappa
+					print('+'*100)
+				time.sleep(chunksleep)
 
 
-
-
-			mytitle='Mandelbrot ' +self.mandfunc+ '  p= '+str(p)+'  q= '+str(q)+'  kappa= '+str(kappa)+'  maxrad= '+str(maxrad)
-			fig.suptitle(mytitle,fontsize=9,color='#00ff00')
-
+			# vertical params print
 			print('\nSELECTED non-boring p,q after',str(boredcount),'tries:')
 			print('\tcx='+str(p)+';cy='+str(q))
 			print('EXITED AT:')
@@ -267,8 +295,19 @@ class Mandel(object):
 			print('\traddev:',raddev)
 			print('\tangavg:',angavg)
 			print('\tangdev:',angdev)
-			print('\tangerr:',angerr)			
+			print('\tangerr:',angerr)	
 
+			# horizontal params print
+			print('\nSELECTED non-boring p,q after',str(boredcount),'tries:')
+			mydata = [kappa,p,q,angerror,maxrad,maxiters,radavg,raddev,angavg,angdev]
+			for item in mydata: print('{: <22}'.format(item),end='')
+			print('\n')
+
+			#___________________________________________________________________#
+
+			# let's plot some stuff
+			mytitle='Mandelbrot ' +self.mandfunc+ '  p= '+str(p)+'  q= '+str(q)+'  kappa= '+str(kappa)+'  maxrad= '+str(maxrad)
+			fig.suptitle(mytitle,fontsize=9,color='#00ff00')
 			refreshall(self)
 			
 			end1=int(kappa/10);end2=int(kappa/5);end3=int(kappa/2);end4=int(0.9*kappa)
@@ -420,7 +459,7 @@ class Mandel(object):
 			if dosave: 
 				# save to DB if it exists
 				try:
-					cnx = mysql.connector.connect(user='root', password='YOURMYSQLPASSWORD**', host='127.0.0.1', database='mandel')
+					cnx = mysql.connector.connect(user='root', password='YOURMYSQLPASSWORD', host='127.0.0.1', database='mandel')
 					cursor = cnx.cursor()
 					add_orbit = 'INSERT INTO orbit (p,q,kappa,maxrad,radavg,raddev,angavg,angdev) ' + 'VALUES ('+str(p)+','+str(q)+','+str(kappa)+','+str(maxrad)+','+str(radavg)+','+str(raddev)+','+str(angavg)+','+str(angdev)+')'
 					cursor.execute(add_orbit)
@@ -459,6 +498,10 @@ dosave=True 	# save params to DB or file, and save png
 doang=False 	# external angle, not implemented yet
 boreme=False 	# pick a long orbit which escapes at the end
 angerror='none'
+
+dodata=True
+chunk=40
+chunksleep=0.05
 
 maxiters=52000	# max iterations
 minbored=1200	# minimum non-boring orbit iterations
