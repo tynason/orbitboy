@@ -489,7 +489,6 @@ class Mandel(object):
 			plt.close()
 		else:
 			plt.show(block=True)
-
 #___________________________________________________________________#
 
 doani=True 	# animate the orbit, rad, ang and histogram plots
@@ -503,13 +502,13 @@ dodata=True
 chunk=40
 chunksleep=0
 
-maxiters=52000	# max iterations
+maxiters=24000	# max iterations
 minbored=1200	# minimum non-boring orbit iterations
 maxrad=2.0		# defines the escape criterion
 trimend=4		# omits the final few iterations from some of the plots
 numbins=200		# no. of bins in the histograms
 
-numgrads=30 		# how many slices to plot the animated orbit
+numgrads=5 		# how many slices to plot the animated orbit
 linewid=.4		# line width
 
 figclose=False 	# close after plotting
@@ -529,7 +528,6 @@ myorange2='#ff6600';myyell='#ffff00';myyell2='#ffcc00';rgbback=mygunmet2
 
 mymand=Mandel(boreme,minbored,xpos,ypos,wid,ht,figsleep,finalsleep)
 mymand.plotme()
-
 #___________________________________________________________________#
 
 """
