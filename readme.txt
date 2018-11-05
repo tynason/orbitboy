@@ -4,7 +4,7 @@ When illustrating fractals, everyone plots 2D color maps. Maps of the Mandelbrot
 
 But each point on the map reduces the entire orbit of this point under the iterative recursion process to a scalar quantity, a colored pixel. The orbit contains a rich amount of detail that is dropped if you map to a scalar. This script shows the orbits with statstics in greater detail. 
 
-The script selects points matching a subjective "boring" criterion: After watching the evolution of various points (the orbits of those points), you see ones that are more interesting, or less boring.
+The script selects points matching a subjective "not boring" criterion: After watching the evolution of various points (the orbits of those points), you see ones that are more interesting, or less boring.
 
 Plenty of orbits are cool to "watch".
 Bound attractive orbits spiral into a central point. 
