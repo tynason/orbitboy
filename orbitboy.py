@@ -501,7 +501,7 @@ angerror='none'
 
 dodata=True
 chunk=40
-chunksleep=0.05
+chunksleep=0
 
 maxiters=52000	# max iterations
 minbored=1200	# minimum non-boring orbit iterations
