@@ -512,7 +512,7 @@ numgrads=5 		# how many slices to plot the animated orbit
 linewid=.4		# line width
 
 figclose=False 	# close after plotting
-figsleep=10		# various sleep intervals
+figsleep=5		# various sleep intervals
 finalsleep=0
 linesleep=0
 
