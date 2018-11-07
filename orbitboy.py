@@ -406,8 +406,8 @@ class Mandel(object):
 				# histograms
 				refreshone(self,10);refreshone(self,12)
 				ax10.set_xlim(0,radmax);ax12.set_xlim(0,angmax)
-				ax10.hist(raddata[0:(n+1)*lag],bins=numbins,normed=True,color=myyell)
-				ax12.hist(angdata[0:(n+1)*lag],bins=numbins,normed=True,color=myyell2)
+				ax10.hist(raddata[0:(n+1)*lag],bins=numbins,normed=True,color=alumen[n])
+				ax12.hist(angdata[0:(n+1)*lag],bins=numbins,normed=True,color=alumen[n])
 
 				plt.show(block=False);fig.canvas.draw()
 				time.sleep(linesleep)
