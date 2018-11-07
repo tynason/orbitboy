@@ -35,18 +35,18 @@ class Mandel(object):
 		return list(zip(R,G,B))
 
 	def datagen(self,maxiterrs):
+
 		contin=True
+
 		boredcount=0 
 		boring=True	# assume it's boring
-		while contin:
+		while True:
 			angerror='none'
 			boredcount+=1
 			params=[];xdata=[];ydata=[];raddata=[];angdata=[]
 			xstats=[];ystats=[];radstats=[];angstats=[];ang2data=[]
 
-			#flip=x=np.random.random_integers(1,5)
-			flip=5
-
+			flip=x=np.random.random_integers(1,2)
 			if flip==1: # 5 period attractive
 				cx=np.random.uniform(0.355,0.360);cy=np.random.uniform(0.315,0.400)
 			elif flip==2: # 5 period repulsive
@@ -58,107 +58,78 @@ class Mandel(object):
 			elif flip==5: # MAIN CARDIOID
 				theta=np.random.uniform(0,2*math.pi);rrr=np.random.uniform(0,0.05)
 				cx=(0.5+rrr)*cos(theta)-cos(2*theta)/4;cy=(0.5+rrr)*sin(theta)-sin(2*theta)/4
-			#elif flip==6: # BULB AT (-1.0)
-			#	theta=np.random.uniform(0,2*math.pi);rrr=np.random.uniform(0,0.1)
-			#	cx=(0.25+rrr)*cos(theta)-1;cy=(0.25+rrr)*sin(theta)
+			elif flip==6: # BULB AT (-1.0)
+				theta=np.random.uniform(0,2*math.pi);rrr=np.random.uniform(0,0.05)
+				cx=(0.25+rrr)*cos(theta)-1;cy=(0.25+rrr)*sin(theta)
 			#___________________________________________________________________#
 
 			xdata.append(cx);ydata.append(cy)
+
+			self.mandfunc='z*z+c'
 
 			k=0;c=complex(cx,cy);z=complex(0.0,0.0)
 			while abs(z)<maxrad and k<maxiterrs:
 				k+=1;z=z*z+c
 				xdata.append(z.real);ydata.append(z.imag)
 			
-			self.mandfunc='z*z+c'
-
-			"""
-			# other functions
-			while abs(z)<2.0 and k<maxiterrs:
-				k+=1;z=z**2*(1-z)/(1+z)
-				xdata.append(z.real);ydata.append(z.imag)
-			self.mandfunc='z**2*z.real*(1+z)/(1-z)'
-
-			while k<maxiterrs and x**2+y**2<maxrad:
-				k+=1;
-				denom=x**2+y**2+.01
-				x=((1-x)*(x**2-y**2)+8*x*y)/denom+cx
-				y=(2*x*(1-x*y)-(x**2+y**2))*(y/denom)+cy
-				xdata.append(x);ydata.append(y)
-			self.mandfunc='moth4'			
-			
-			while k<maxiterrs and x**2+y**2<maxrad:
-				k+=1;
-				denom=x**2+y**3+.2
-				x=((1-x)*(x**2-y**2)+2*x*y**2)/denom+cx
-				y=(2*x*(1-x)-(x**2+y**2))*(y/denom)+cy
-				xdata.append(x);ydata.append(y)
-			self.mandfunc='moth3'
-			"""
-
-			if boreme: # we don't care if it's boring so stop looking
-				boring=False; contin=False
+			if boreme:
+				if k>=minbored: # we don't care if it's boring so stop looking
+					print('BORING #',boredcount,'kappa=',k,'\tcx=',cx,'\tcy=',cy)
+					break # go on to calculate stats and return
+				else: continue # keep looking
 			else:
-				# not boring if k large but not the max (long period escaper)
 				if k>minbored and k<maxiterrs: # we found a non-boring one
-					boring=False
-			# if neither of these holds, boring is still True, we keep looking
+					break # go on to calculate stats and return
+				else: continue # keep looking
 
-			#if boreme and boring: print('BORING #',boredcount,'kappa=',k,'\tcx=',cx,'\tcy=',cy)
-				# get the stats and return them
+		for n in range(0,k-2):
+			rad=xdata[n]**2+ydata[n]**2
+			raddata.append(rad)
 
-			#elif not boreme and boring:
-				# don't bother with stats, just continue
+			# external angle
+			if abs(xdata[n])>1e-8:
+				ang=math.atan2(ydata[n],xdata[n]);ang=math.degrees(ang)%360
+			else:
+				ang=90
+				print('arctan!!!!')
+			angdata.append(ang)
+		
+			angerror='none'
+			if doang:
+				for n in range(0,k-2):  # internal angle; needs TRY EXCEPT
+					point1=xdata[n],ydata[n];point2=xdata[n+1],ydata[n+1];point3=xdata[n+2],ydata[n+2]
+					lineA=([point1[0],point1[1]]),([point2[0],point2[1]]);lineB=point2,point3
+					vA=([(lineA[0][0]-lineA[1][0]),(lineA[0][1]-lineA[1][1])])
+					vB=([(lineB[0][0]-lineB[1][0]),(lineB[0][1]-lineB[1][1])])
+					dot_prod=dot(vA,vB);magA=dot(vA,vA)**0.5;magB=dot(vB,vB)**0.5
 
-			# if not boreme and not boring:
-			if not boring:
-				contin=False
-			
-				for n in range(0,k-2):
-					rad=xdata[n]**2+ydata[n]**2
-					raddata.append(rad)
+					if abs(magA)<1e-8:
+						angerror='magA=0'
+						print(angerror); break
+					if abs(magB)<1e-8:
+						angerror='magB=0'
+						print(angerror); break
 
-					# external angle
-					if abs(xdata[n])>1e-8:
-						ang=math.atan2(ydata[n],xdata[n]);ang=math.degrees(ang)%360
-					else:
-						ang=90
-						print('arctan!!!!')
-					angdata.append(ang)
+					argg=dot_prod/magB/magA
+					if abs(argg)>1:
+						angerror='arccos(arg>1)'
+						print(angerror); break
+
+					ang=math.acos(argg)
+					ang_deg=180-math.degrees(ang)%360
+					ang2data.append(ang_deg)
+
+				ang2data=ang2data[1:]
 				
-					angerror='none'
-					if doang:
-						for n in range(0,k-2):  # internal angle; needs TRY EXCEPT
-							point1=xdata[n],ydata[n];point2=xdata[n+1],ydata[n+1];point3=xdata[n+2],ydata[n+2]
-							lineA=([point1[0],point1[1]]),([point2[0],point2[1]]);lineB=point2,point3
-							vA=([(lineA[0][0]-lineA[1][0]),(lineA[0][1]-lineA[1][1])])
-							vB=([(lineB[0][0]-lineB[1][0]),(lineB[0][1]-lineB[1][1])])
-							dot_prod=dot(vA,vB);magA=dot(vA,vA)**0.5;magB=dot(vB,vB)**0.5
 
-							if abs(magA)<1e-8:
-								angerror='magA'
-								print(angerror); break
-							if abs(magB)<1e-8:
-								print('magB=0'); break
+		params=[k,cx,cy,angerror]
+		xmin=min(xdata[:k-trimend]);xmax=max(xdata[:k-trimend]);xavg=mean(xdata);xdev=std(xdata);xstats=[xmin,xmax,xavg,xdev]
+		ymin=min(ydata[:k-trimend]);ymax=max(ydata[:k-trimend]);yavg=mean(ydata);ydev=std(ydata);ystats=[ymin,ymax,yavg,ydev]
+		radmin=min(raddata);radmax=max(raddata);radavg=mean(raddata);raddev=std(raddata);radstats=[radmin,radmax,radavg,raddev]
+		angmin=min(angdata);angmax=max(angdata);angavg=mean(angdata);angdev=std(angdata);angstats=[angmin,angmax,angavg,angdev]
+		return params,xstats,ystats,radstats,angstats,xdata,ydata,raddata,angdata,boredcount,ang2data
 
-							argg=dot_prod/magB/magA
-							if abs(argg)>1:
-								print('arccos!!!!',argg)
-								ang_deg=180
-							else:
-								ang=math.acos(argg)
-								ang_deg=180-math.degrees(ang)%360
-							ang2data.append(ang_deg)
-						ang2data=ang2data[1:]
-
-				params=[k,cx,cy,angerror]
-				xmin=min(xdata[:k-trimend]);xmax=max(xdata[:k-trimend]);xavg=mean(xdata);xdev=std(xdata);xstats=[xmin,xmax,xavg,xdev]
-				ymin=min(ydata[:k-trimend]);ymax=max(ydata[:k-trimend]);yavg=mean(ydata);ydev=std(ydata);ystats=[ymin,ymax,yavg,ydev]
-				radmin=min(raddata);radmax=max(raddata);radavg=mean(raddata);raddev=std(raddata);radstats=[radmin,radmax,radavg,raddev]
-				angmin=min(angdata);angmax=max(angdata);angavg=mean(angdata);angdev=std(angdata);angstats=[angmin,angmax,angavg,angdev]
-				return params,xstats,ystats,radstats,angstats,xdata,ydata,raddata,angdata,boredcount,ang2data
-
-			else: print('BORING #',boredcount,'kappa=',k,'\tcx=',cx,'\tcy=',cy)
+			
 
 
 
@@ -217,7 +188,7 @@ class Mandel(object):
 			ax.patch.set_facecolor(rgbback)
 			ax.patch.set_alpha(1.0)
 			ax.tick_params(axis='x',labelsize=6,labelcolor='#ffffff')
-			ax.tick_params(axis='y',labelsize=6,labelcolor='#ffffff')		
+			ax.tick_params(axis='y',labelsize=6,labelcolor='#ffffff')
 
 		win = plt.gcf().canvas.manager.window
 		fig.canvas.manager.window.wm_geometry('%dx%d%+d%+d' % (wid,ht,xpos,ypos))
@@ -300,20 +271,23 @@ class Mandel(object):
 			print('\tkappa:',kappa)
 			print('\tp='+str(p))
 			print('\tq='+str(q))
+
+			print('\tboreme:',boreme)
+			print('\tminbored:',minbored)
 			print('\tmaxiters',maxiters)
+
 			print('\tradavg:',radavg)
 			print('\traddev:',raddev)
 			print('\tangavg:',angavg)
 			print('\tangdev:',angdev)
 			print('\tangerr:',angerr)
 
-			print('\tboreme:',boreme)
-			print('\tminbored:',minbored);			
 			print('\tnumbins:',numbins)
 			print('\tnumgrads',numgrads)
 			print('\ttrimend:',trimend)
 			print('\tlag:',lag)
 
+			"""
 			# horizontal params print
 			myheader = ['kappa','p','q','maxrad','maxiters','radavg','raddev','angavg','angdev','angerror']
 			for item in myheader: print('{: <22}'.format(item),end='')
@@ -329,6 +303,7 @@ class Mandel(object):
 			mydata = [boreme,minbored,numbins,numgrads,trimend,lag]
 			for item in mydata: print('{: <22}'.format(item),end='')
 			print('\n')
+			"""
 
 			#___________________________________________________________________#
 
@@ -381,7 +356,7 @@ class Mandel(object):
 			ax7.set_xlim(0,kappa-trimend);ax7.set_ylim(angmin,angmax)
 
 			ax10.hist(raddata[0:kappa-trimend],bins=numbins,normed=True,color=myyell)
-			ax12.hist(angdata[0:kappa-trimend],bins=numbins,normed=True,color=myyell2)	
+			ax12.hist(angdata[0:kappa-trimend],bins=numbins,normed=True,color=myyell2)
 			if not doani:
 				ax0.plot(xdata[0:kappa-trimend],ydata[0:kappa-trimend],lw=linewid,color=myteal)
 				ax5.plot(raddata[0:kappa-trimend],lw=linewid,color=myturq)
@@ -425,7 +400,7 @@ class Mandel(object):
 			ax8.set_title('FT('+datalbl+') vs period   Fsamp=300',loc='left',fontsize=8,color=mybritegrn)
 			ax8.set_xlabel('period',fontsize=8,color=mybritegrn)
 			ax8.set_ylabel('FT('+datalbl+')',fontsize=8,color=mybritegrn)
-			ax8.plot(frq1[1:maxfreq],abs(Y1[1:maxfreq]),lw=linewid,color=myorange2)			
+			ax8.plot(frq1[1:maxfreq],abs(Y1[1:maxfreq]),lw=linewid,color=myorange2)
 			#___________________________________________________________________#
 
 			plt.show(block=False);fig.canvas.draw()
@@ -453,17 +428,27 @@ class Mandel(object):
 				n=0
 				#print('\nFIRST SLICE') # handle first slice manually
 				#print('n,n*lag,(n+1)*lag,xdata[n*lag:(n+1)*lag]')
-				#print(n,n*lag,(n+1)*lag,xdata[n*lag:(n+1)*lag])					
+				#print(n,n*lag,(n+1)*lag,xdata[n*lag:(n+1)*lag])
 				ax0.plot(xdata[n*lag:(n+1)*lag],ydata[n*lag:(n+1)*lag],lw=linewid,color=alumen[n])
-				
+
 				#ax5.plot(raddata[n*lag:(n+1)*lag],lw=linewid,color=alumen[n])
 				xx=np.arange(n*lag,(n+1)*lag)
 				yy=np.array(raddata[n*lag:(n+1)*lag])
+				if len(xx)!=len(yy):
+					xx.pop() #del xx[-1]
+					print('exception :(')
+					print('n,p,q',n,p,q)
+					print('lenxx,lenyy',len(xx),len(yy))
 				ax5.plot(xx,yy,lw=linewid,color=alumen[n])
 
 				#ax7.plot(angdata[n*lag:(n+1)*lag],lw=linewid,color=alumen[n])
 				xx=np.arange(n*lag,(n+1)*lag)
 				yy=np.array(angdata[n*lag:(n+1)*lag])
+				if len(xx)!=len(yy):
+					xx.pop() #del xx[-1]
+					print('exception :(')
+					print('n,p,q',n,p,q)
+					print('lenxx,lenyy',len(xx),len(yy))
 				ax7.plot(xx,yy,lw=linewid,color=alumen[n])
 
 
@@ -476,8 +461,6 @@ class Mandel(object):
 
 				plt.show(block=False);fig.canvas.draw()
 				time.sleep(linesleep)
-
-
 
 
 				#for n in range(1,numgrads):
@@ -494,12 +477,24 @@ class Mandel(object):
 						#ax5.plot(raddata[0:(n+1)*lag],lw=linewid,color=alumen[n])
 						#ax7.plot(angdata[0:(n+1)*lag],lw=linewid,color=alumen[n])
 
-						xx=np.arange(n*lag,(n+1)*lag)
+
 						yy=np.array(raddata[n*lag:(n+1)*lag])
+						xx=np.arange(n*lag,n*lag+len(yy))
+
+						if len(xx)!=len(yy):
+							xx.pop() #del xx[-1]
+							print('EXCEPTION rad')
+							print('n,p,q',n,p,q)
+							print('lenxx,lenyy',len(xx),len(yy))
 						ax5.plot(xx,yy,lw=linewid,color=alumen[n])
 
-						xx=np.arange(n*lag,(n+1)*lag)
-						yy=np.array(angdata[n*lag:(n+1)*lag])
+						yy=np.array(angdata[n*lag-1:(n+1)*lag])
+						xx=np.arange(n*lag,n*lag+len(yy))
+						if len(xx)!=len(yy):
+							xx.pop() #del xx[-1]	
+							print('EXCEPTION ang')
+							print('n,p,q',n,p,q)
+							print('lenxx,lenyy',len(xx),len(yy))
 						ax7.plot(xx,yy,lw=linewid,color=alumen[n])
 
 						#ANI HIST
@@ -515,7 +510,9 @@ class Mandel(object):
 						# the lists/arrays xx and yy are sometimes not the same length
 						# causing an esception
 						# so we should prob treat the last slice separately and carefully
-						print('exception :(')
+						print('EXCEPTION caught; post-correction values:')
+						print('n,p,q',n,p,q)
+						print('lenxx,lenyy',len(xx),len(yy))
 						continue
 
 				n=numgrads-1
@@ -557,27 +554,27 @@ class Mandel(object):
 			plt.close()
 		else:
 			plt.show(block=True)
-
 #___________________________________________________________________#
 
-doani=True 	# animate the orbit, rad, ang and histogram plots
+doani=True 		# animate the orbit, rad, and ang plots
 doloop=True		# loop thru random orbits, not just one
 dosave=True 	# save params to DB or file, and save png
 doang=False 	# external angle, not implemented yet
-boreme=False 	# pick a long orbit which escapes at the end
 angerror='none'
 
-dodata=True
+dodata=False
 chunk=40
 chunksleep=0
 
 maxiters=4400	# max iterations
-minbored=1200	# minimum non-boring orbit iterations
+
+boreme=False 	# pick a long orbit which escapes at the end
+minbored=440	# minimum non-boring orbit iterations
 maxrad=2.0		# defines the escape criterion
 trimend=4		# omits the final few iterations from some of the plots
 numbins=200		# no. of bins in the histograms
 
-numgrads=5 		# how many slices to plot the animated orbit
+numgrads=9 		# how many slices to plot the animated orbit
 linewid=.4		# line width
 
 figclose=False 	# close after plotting
@@ -597,7 +594,6 @@ myorange2='#ff6600';myyell='#ffff00';myyell2='#ffcc00';rgbback=mygunmet2
 
 mymand=Mandel(boreme,minbored,xpos,ypos,wid,ht,figsleep,finalsleep)
 mymand.plotme()
-
 #___________________________________________________________________#
 
 """
@@ -654,7 +650,7 @@ cx=0.252646183022;cy=-0.000235409650954
 cx=0.355384646380999;cy=0.3332026372971109
 cx=0.3563268958199877;cy=0.33007286156906823
 cx=0.3581128676046881;cy=0.3244716896271824
-cx=-0.735421537445;cy=-0.163709777921 how in hell is ther only 1 peak at 26 ?
+cx=-0.735421537445;cy=-0.163709777921 how only 1 peak at 26 ?
 cx=-0.7506095013167247;cy=0.02017840558087991
 cx=-0.7451660763608009;cy=0.08098427487766885
 cx=-0.748788372883687;cy=0.0692479509378728
@@ -726,5 +722,28 @@ cx=-0.669024875506;cy=-0.350659130696
 # if doang...
 #ax1111.set_title('ang2int-k',fontsize=8,color=mybritegrn)
 #ax1111.plot(ang2data,lw=linewid,color=myturq)
+
+
+# other functions
+while abs(z)<2.0 and k<maxiterrs:
+	k+=1;z=z**2*(1-z)/(1+z)
+	xdata.append(z.real);ydata.append(z.imag)
+self.mandfunc='z**2*z.real*(1+z)/(1-z)'
+
+while k<maxiterrs and x**2+y**2<maxrad:
+	k+=1;
+	denom=x**2+y**2+.01
+	x=((1-x)*(x**2-y**2)+8*x*y)/denom+cx
+	y=(2*x*(1-x*y)-(x**2+y**2))*(y/denom)+cy
+	xdata.append(x);ydata.append(y)
+self.mandfunc='moth4'			
+
+while k<maxiterrs and x**2+y**2<maxrad:
+	k+=1;
+	denom=x**2+y**3+.2
+	x=((1-x)*(x**2-y**2)+2*x*y**2)/denom+cx
+	y=(2*x*(1-x)-(x**2+y**2))*(y/denom)+cy
+	xdata.append(x);ydata.append(y)
+self.mandfunc='moth3'
 
 """
