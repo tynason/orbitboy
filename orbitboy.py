@@ -104,6 +104,13 @@ class Mandel(object):
 					boring=False
 			# if neither of these holds, boring is still True, we keep looking
 
+			#if boreme and boring: print('BORING #',boredcount,'kappa=',k,'\tcx=',cx,'\tcy=',cy)
+				# get the stats and return them
+
+			#elif not boreme and boring:
+				# don't bother with stats, just continue
+
+			# if not boreme and not boring:
 			if not boring:
 				contin=False
 			
@@ -152,6 +159,9 @@ class Mandel(object):
 				return params,xstats,ystats,radstats,angstats,xdata,ydata,raddata,angdata,boredcount,ang2data
 
 			else: print('BORING #',boredcount,'kappa=',k,'\tcx=',cx,'\tcy=',cy)
+
+
+
 
 	def plotme(self):
 
@@ -284,22 +294,39 @@ class Mandel(object):
 				time.sleep(chunksleep)
 
 
-			# vertical params print
 			print('\nSELECTED non-boring p,q after',str(boredcount),'tries:')
-			print('\tcx='+str(p)+';cy='+str(q))
-			print('EXITED AT:')
-			print('\tkappa:',kappa);print('\tminbored:',minbored);print('\tmaxiters:',maxiters)
-			print('\tboreme:',boreme);print('\tnumbins:',numbins);print('\ttrimend:',trimend);print('\tlag:',lag)
-			print('\tnumgrads',numgrads)
+
+			# vertical params print
+			print('\tkappa:',kappa)
+			print('\tp='+str(p))
+			print('\tq='+str(q))
+			print('\tmaxiters',maxiters)
 			print('\tradavg:',radavg)
 			print('\traddev:',raddev)
 			print('\tangavg:',angavg)
 			print('\tangdev:',angdev)
-			print('\tangerr:',angerr)	
+			print('\tangerr:',angerr)
+
+			print('\tboreme:',boreme)
+			print('\tminbored:',minbored);			
+			print('\tnumbins:',numbins)
+			print('\tnumgrads',numgrads)
+			print('\ttrimend:',trimend)
+			print('\tlag:',lag)
 
 			# horizontal params print
-			print('\nSELECTED non-boring p,q after',str(boredcount),'tries:')
-			mydata = [kappa,p,q,angerror,maxrad,maxiters,radavg,raddev,angavg,angdev]
+			myheader = ['kappa','p','q','maxrad','maxiters','radavg','raddev','angavg','angdev','angerror']
+			for item in myheader: print('{: <22}'.format(item),end='')
+			print('\n')
+			mydata = [kappa,p,q,maxrad,maxiters,radavg,raddev,angavg,angdev,angerror]
+			for item in mydata: print('{: <22}'.format(item),end='')
+			print('\n')
+
+			# horizontal params print
+			myheader = ['boreme','minbored','numbins','numgrads','trimend','lag']
+			for item in myheader: print('{: <22}'.format(item),end='')
+			print('\n')
+			mydata = [boreme,minbored,numbins,numgrads,trimend,lag]
 			for item in mydata: print('{: <22}'.format(item),end='')
 			print('\n')
 
@@ -353,14 +380,15 @@ class Mandel(object):
 			ax5.set_xlim(0,kappa-trimend);ax5.set_ylim(radmin,radmax)
 			ax7.set_xlim(0,kappa-trimend);ax7.set_ylim(angmin,angmax)
 
+			ax10.hist(raddata[0:kappa-trimend],bins=numbins,normed=True,color=myyell)
+			ax12.hist(angdata[0:kappa-trimend],bins=numbins,normed=True,color=myyell2)	
 			if not doani:
 				ax0.plot(xdata[0:kappa-trimend],ydata[0:kappa-trimend],lw=linewid,color=myteal)
 				ax5.plot(raddata[0:kappa-trimend],lw=linewid,color=myturq)
 				ax7.plot(angdata[0:kappa-trimend],lw=linewid,color=myteal)
-				ax10.hist(raddata[0:kappa-trimend],bins=numbins,normed=True,color=myyell)
-				ax12.hist(angdata[0:kappa-trimend],bins=numbins,normed=True,color=myyell2)				
-				
+			
 			#___________________________________________________________________#
+
 			data=raddata
 			datalbl='rad'
 			maxfreq=int(kappa/15)
@@ -401,7 +429,10 @@ class Mandel(object):
 			#___________________________________________________________________#
 
 			plt.show(block=False);fig.canvas.draw()
-		
+			refreshone(self,5);refreshone(self,7)
+			#refreshone(self,10);refreshone(self,12)
+
+
 			if doani:
 
 				# The -1 in xdata[n*lag-1:(n+1)*lag] is needed to make the line from the slice start from the last point in the previous slice
@@ -413,53 +444,90 @@ class Mandel(object):
 				# so there will typically be a few points at the end not covered by the loop;
 				# these are handled manually after the loop.
 
-				#print(xdata)
-				ax0.set_xlim(xmin,xmax);ax0.set_ylim(ymin,ymax)
+
+
 				ax5.set_xlim(0,kappa-trimend);ax5.set_ylim(radmin,radmax)
 				ax7.set_xlim(0,kappa-trimend);ax7.set_ylim(angmin,angmax)
-				ax10.set_xlim(0,radmax);ax12.set_xlim(0,angmax)
+
 
 				n=0
 				#print('\nFIRST SLICE') # handle first slice manually
 				#print('n,n*lag,(n+1)*lag,xdata[n*lag:(n+1)*lag]')
 				#print(n,n*lag,(n+1)*lag,xdata[n*lag:(n+1)*lag])					
 				ax0.plot(xdata[n*lag:(n+1)*lag],ydata[n*lag:(n+1)*lag],lw=linewid,color=alumen[n])
-				ax5.plot(raddata[n*lag:(n+1)*lag],lw=linewid,color=alumen[n])
-				ax7.plot(angdata[n*lag:(n+1)*lag],lw=linewid,color=alumen[n])
-				ax10.hist(raddata[0:(n+1)*lag],bins=numbins,normed=True,color=myyell)
-				ax12.hist(angdata[0:(n+1)*lag],bins=numbins,normed=True,color=myyell2)
+				
+				#ax5.plot(raddata[n*lag:(n+1)*lag],lw=linewid,color=alumen[n])
+				xx=np.arange(n*lag,(n+1)*lag)
+				yy=np.array(raddata[n*lag:(n+1)*lag])
+				ax5.plot(xx,yy,lw=linewid,color=alumen[n])
+
+				#ax7.plot(angdata[n*lag:(n+1)*lag],lw=linewid,color=alumen[n])
+				xx=np.arange(n*lag,(n+1)*lag)
+				yy=np.array(angdata[n*lag:(n+1)*lag])
+				ax7.plot(xx,yy,lw=linewid,color=alumen[n])
+
+
+				#ANI HIST
+				#ax10.set_xlim(0,radmax)
+				#ax12.set_xlim(0,angmax)
+				#print('radmax,angmax',radmax,angmax)
+				#ax10.hist(raddata[0:(n+1)*lag],bins=numbins,normed=True,color=myyell)
+				#ax12.hist(angdata[0:(n+1)*lag],bins=numbins,normed=True,color=myyell2)
 
 				plt.show(block=False);fig.canvas.draw()
 				time.sleep(linesleep)
 
+
+
+
 				#for n in range(1,numgrads):
 				while (n+1)*lag<kappa-lag:
-					n+=1
-					#print('n,n*lag-1,(n+1)*lag,xdata[n*lag-1:(n+1)*lag]')
-					#print(n,n*lag-1,(n+1)*lag,xdata[n*lag-1:(n+1)*lag])
 
-					ax0.plot(xdata[n*lag-1:(n+1)*lag],ydata[n*lag-1:(n+1)*lag],lw=linewid,color=alumen[n])
-					
-					refreshone(self,5);refreshone(self,7);refreshone(self,10);refreshone(self,12)						
-					ax5.plot(raddata[0:(n+1)*lag],lw=linewid,color=alumen[n])
-					ax7.plot(angdata[0:(n+1)*lag],lw=linewid,color=alumen[n])
-					ax10.hist(raddata[0:(n+1)*lag],bins=numbins,normed=True,color=myyell)
-					ax12.hist(angdata[0:(n+1)*lag],bins=numbins,normed=True,color=myyell2)
+					try:
+						n+=1
+						#print('n,n*lag-1,(n+1)*lag,xdata[n*lag-1:(n+1)*lag]')
+						#print(n,n*lag-1,(n+1)*lag,xdata[n*lag-1:(n+1)*lag])
 
-					plt.show(block=False);fig.canvas.draw()
-					time.sleep(linesleep)
+						ax0.plot(xdata[n*lag-1:(n+1)*lag],ydata[n*lag-1:(n+1)*lag],lw=linewid,color=alumen[n])
+						
+						#refreshone(self,5);refreshone(self,7)
+						#ax5.plot(raddata[0:(n+1)*lag],lw=linewid,color=alumen[n])
+						#ax7.plot(angdata[0:(n+1)*lag],lw=linewid,color=alumen[n])
+
+						xx=np.arange(n*lag,(n+1)*lag)
+						yy=np.array(raddata[n*lag:(n+1)*lag])
+						ax5.plot(xx,yy,lw=linewid,color=alumen[n])
+
+						xx=np.arange(n*lag,(n+1)*lag)
+						yy=np.array(angdata[n*lag:(n+1)*lag])
+						ax7.plot(xx,yy,lw=linewid,color=alumen[n])
+
+						#ANI HIST
+						#refreshone(self,10);refreshone(self,12)
+						#ax10.hist(raddata[0:(n+1)*lag],bins=numbins,normed=True,color=myyell)
+						#ax12.hist(angdata[0:(n+1)*lag],bins=numbins,normed=True,color=myyell2)
+
+						plt.show(block=False);fig.canvas.draw()
+						time.sleep(linesleep)
+
+					except:
+						# on the last slice, which will prob not be a full slice,
+						# the lists/arrays xx and yy are sometimes not the same length
+						# causing an esception
+						# so we should prob treat the last slice separately and carefully
+						print('exception :(')
+						continue
 
 				n=numgrads-1
+
 
 			nice.append(params);xnice.append(params[1]);ynice.append(params[2])
 			intfile=str(kappa)+'_'+str(p)+'_'+str(q)+'.txt'
 
-			#print xstats +++++++++++++++++++++++++++++++++++++++++
-
 			if dosave: 
 				# save to DB if it exists
 				try:
-					cnx = mysql.connector.connect(user='root', password='YOURMYSQLPASSWORD', host='127.0.0.1', database='mandel')
+					cnx = mysql.connector.connect(user='root', password='YOURMYSQLPASSWORD**', host='127.0.0.1', database='mandel')
 					cursor = cnx.cursor()
 					add_orbit = 'INSERT INTO orbit (p,q,kappa,maxrad,radavg,raddev,angavg,angdev) ' + 'VALUES ('+str(p)+','+str(q)+','+str(kappa)+','+str(maxrad)+','+str(radavg)+','+str(raddev)+','+str(angavg)+','+str(angdev)+')'
 					cursor.execute(add_orbit)
@@ -489,6 +557,7 @@ class Mandel(object):
 			plt.close()
 		else:
 			plt.show(block=True)
+
 #___________________________________________________________________#
 
 doani=True 	# animate the orbit, rad, ang and histogram plots
@@ -502,7 +571,7 @@ dodata=True
 chunk=40
 chunksleep=0
 
-maxiters=24000	# max iterations
+maxiters=4400	# max iterations
 minbored=1200	# minimum non-boring orbit iterations
 maxrad=2.0		# defines the escape criterion
 trimend=4		# omits the final few iterations from some of the plots
@@ -512,7 +581,7 @@ numgrads=5 		# how many slices to plot the animated orbit
 linewid=.4		# line width
 
 figclose=False 	# close after plotting
-figsleep=5		# various sleep intervals
+figsleep=0		# various sleep intervals
 finalsleep=0
 linesleep=0
 
@@ -528,6 +597,7 @@ myorange2='#ff6600';myyell='#ffff00';myyell2='#ffcc00';rgbback=mygunmet2
 
 mymand=Mandel(boreme,minbored,xpos,ypos,wid,ht,figsleep,finalsleep)
 mymand.plotme()
+
 #___________________________________________________________________#
 
 """
