@@ -35,13 +35,8 @@ class Mandel(object):
 		return list(zip(R,G,B))
 
 	def datagen(self,maxiterrs):
-
-		contin=True
-
 		boredcount=0 
-		boring=True	# assume it's boring
 		while True:
-			angerror='none'
 			boredcount+=1
 			params=[];xdata=[];ydata=[];raddata=[];angdata=[]
 			xstats=[];ystats=[];radstats=[];angstats=[];ang2data=[]
@@ -83,18 +78,22 @@ class Mandel(object):
 				else: continue # keep looking
 
 		for n in range(0,k-2):
+		
 			rad=xdata[n]**2+ydata[n]**2
 			raddata.append(rad)
 
+
 			# external angle
-			if abs(xdata[n])>1e-8:
-				ang=math.atan2(ydata[n],xdata[n]);ang=math.degrees(ang)%360
+			angerror='none'	
+			if abs(xdata[n])<1e-8:
+				ang=90 # this is not a critical error, just cannot take arctan of 0, so no break
+				angerror='ext_angle arctan(0) set ang=90'
+				print('QUASI-EXCEPTION angerror: ', angerror)
 			else:
-				ang=90
-				print('arctan!!!!')
+				ang=math.atan2(ydata[n],xdata[n]);ang=math.degrees(ang)%360
 			angdata.append(ang)
 		
-			angerror='none'
+
 			if doang:
 				for n in range(0,k-2):  # internal angle; needs TRY EXCEPT
 					point1=xdata[n],ydata[n];point2=xdata[n+1],ydata[n+1];point3=xdata[n+2],ydata[n+2]
@@ -105,15 +104,16 @@ class Mandel(object):
 
 					if abs(magA)<1e-8:
 						angerror='magA=0'
-						print(angerror); break
+						print('EXCEPTION angerror: ', angerror); break
+
 					if abs(magB)<1e-8:
 						angerror='magB=0'
-						print(angerror); break
+						print('EXCEPTION angerror: ', angerror); break
 
 					argg=dot_prod/magB/magA
 					if abs(argg)>1:
 						angerror='arccos(arg>1)'
-						print(angerror); break
+						print('EXCEPTION angerror: ', angerror); break
 
 					ang=math.acos(argg)
 					ang_deg=180-math.degrees(ang)%360
@@ -128,10 +128,6 @@ class Mandel(object):
 		radmin=min(raddata);radmax=max(raddata);radavg=mean(raddata);raddev=std(raddata);radstats=[radmin,radmax,radavg,raddev]
 		angmin=min(angdata);angmax=max(angdata);angavg=mean(angdata);angdev=std(angdata);angstats=[angmin,angmax,angavg,angdev]
 		return params,xstats,ystats,radstats,angstats,xdata,ydata,raddata,angdata,boredcount,ang2data
-
-			
-
-
 
 
 	def plotme(self):
@@ -264,7 +260,6 @@ class Mandel(object):
 					print('+'*100)
 				time.sleep(chunksleep)
 
-
 			print('\nSELECTED non-boring p,q after',str(boredcount),'tries:')
 
 			# vertical params print
@@ -286,25 +281,6 @@ class Mandel(object):
 			print('\tnumgrads',numgrads)
 			print('\ttrimend:',trimend)
 			print('\tlag:',lag)
-
-			"""
-			# horizontal params print
-			myheader = ['kappa','p','q','maxrad','maxiters','radavg','raddev','angavg','angdev','angerror']
-			for item in myheader: print('{: <22}'.format(item),end='')
-			print('\n')
-			mydata = [kappa,p,q,maxrad,maxiters,radavg,raddev,angavg,angdev,angerror]
-			for item in mydata: print('{: <22}'.format(item),end='')
-			print('\n')
-
-			# horizontal params print
-			myheader = ['boreme','minbored','numbins','numgrads','trimend','lag']
-			for item in myheader: print('{: <22}'.format(item),end='')
-			print('\n')
-			mydata = [boreme,minbored,numbins,numgrads,trimend,lag]
-			for item in mydata: print('{: <22}'.format(item),end='')
-			print('\n')
-			"""
-
 			#___________________________________________________________________#
 
 			# let's plot some stuff
@@ -405,8 +381,6 @@ class Mandel(object):
 
 			plt.show(block=False);fig.canvas.draw()
 			refreshone(self,5);refreshone(self,7)
-			#refreshone(self,10);refreshone(self,12)
-
 
 			if doani:
 
@@ -419,100 +393,51 @@ class Mandel(object):
 				# so there will typically be a few points at the end not covered by the loop;
 				# these are handled manually after the loop.
 
-
-
 				ax5.set_xlim(0,kappa-trimend);ax5.set_ylim(radmin,radmax)
 				ax7.set_xlim(0,kappa-trimend);ax7.set_ylim(angmin,angmax)
 
-
 				n=0
 				#print('\nFIRST SLICE') # handle first slice manually
-				#print('n,n*lag,(n+1)*lag,xdata[n*lag:(n+1)*lag]')
-				#print(n,n*lag,(n+1)*lag,xdata[n*lag:(n+1)*lag])
 				ax0.plot(xdata[n*lag:(n+1)*lag],ydata[n*lag:(n+1)*lag],lw=linewid,color=alumen[n])
 
-				#ax5.plot(raddata[n*lag:(n+1)*lag],lw=linewid,color=alumen[n])
 				xx=np.arange(n*lag,(n+1)*lag)
 				yy=np.array(raddata[n*lag:(n+1)*lag])
-				if len(xx)!=len(yy):
-					xx.pop() #del xx[-1]
-					print('exception :(')
-					print('n,p,q',n,p,q)
-					print('lenxx,lenyy',len(xx),len(yy))
+				if len(xx)!=len(yy): xx.pop() #del xx[-1]
 				ax5.plot(xx,yy,lw=linewid,color=alumen[n])
 
-				#ax7.plot(angdata[n*lag:(n+1)*lag],lw=linewid,color=alumen[n])
 				xx=np.arange(n*lag,(n+1)*lag)
 				yy=np.array(angdata[n*lag:(n+1)*lag])
-				if len(xx)!=len(yy):
-					xx.pop() #del xx[-1]
-					print('exception :(')
-					print('n,p,q',n,p,q)
-					print('lenxx,lenyy',len(xx),len(yy))
+				if len(xx)!=len(yy): xx.pop() #del xx[-1]
 				ax7.plot(xx,yy,lw=linewid,color=alumen[n])
-
-
-				#ANI HIST
-				#ax10.set_xlim(0,radmax)
-				#ax12.set_xlim(0,angmax)
-				#print('radmax,angmax',radmax,angmax)
-				#ax10.hist(raddata[0:(n+1)*lag],bins=numbins,normed=True,color=myyell)
-				#ax12.hist(angdata[0:(n+1)*lag],bins=numbins,normed=True,color=myyell2)
 
 				plt.show(block=False);fig.canvas.draw()
 				time.sleep(linesleep)
 
 
-				#for n in range(1,numgrads):
 				while (n+1)*lag<kappa-lag:
 
 					try:
 						n+=1
-						#print('n,n*lag-1,(n+1)*lag,xdata[n*lag-1:(n+1)*lag]')
-						#print(n,n*lag-1,(n+1)*lag,xdata[n*lag-1:(n+1)*lag])
 
 						ax0.plot(xdata[n*lag-1:(n+1)*lag],ydata[n*lag-1:(n+1)*lag],lw=linewid,color=alumen[n])
 						
-						#refreshone(self,5);refreshone(self,7)
-						#ax5.plot(raddata[0:(n+1)*lag],lw=linewid,color=alumen[n])
-						#ax7.plot(angdata[0:(n+1)*lag],lw=linewid,color=alumen[n])
-
-
 						yy=np.array(raddata[n*lag:(n+1)*lag])
 						xx=np.arange(n*lag,n*lag+len(yy))
-
-						if len(xx)!=len(yy):
-							xx.pop() #del xx[-1]
-							print('EXCEPTION rad')
-							print('n,p,q',n,p,q)
-							print('lenxx,lenyy',len(xx),len(yy))
+						if len(xx)!=len(yy): xx.pop() #del xx[-1]
 						ax5.plot(xx,yy,lw=linewid,color=alumen[n])
 
 						yy=np.array(angdata[n*lag-1:(n+1)*lag])
 						xx=np.arange(n*lag,n*lag+len(yy))
-						if len(xx)!=len(yy):
-							xx.pop() #del xx[-1]	
-							print('EXCEPTION ang')
-							print('n,p,q',n,p,q)
-							print('lenxx,lenyy',len(xx),len(yy))
+						if len(xx)!=len(yy): xx.pop() #del xx[-1]
 						ax7.plot(xx,yy,lw=linewid,color=alumen[n])
-
-						#ANI HIST
-						#refreshone(self,10);refreshone(self,12)
-						#ax10.hist(raddata[0:(n+1)*lag],bins=numbins,normed=True,color=myyell)
-						#ax12.hist(angdata[0:(n+1)*lag],bins=numbins,normed=True,color=myyell2)
 
 						plt.show(block=False);fig.canvas.draw()
 						time.sleep(linesleep)
 
 					except:
 						# on the last slice, which will prob not be a full slice,
-						# the lists/arrays xx and yy are sometimes not the same length
-						# causing an esception
+						# the lists/arrays xx and yy are sometimes not the same length causing an exception
 						# so we should prob treat the last slice separately and carefully
-						print('EXCEPTION caught; post-correction values:')
-						print('n,p,q',n,p,q)
-						print('lenxx,lenyy',len(xx),len(yy))
 						continue
 
 				n=numgrads-1
@@ -547,7 +472,7 @@ class Mandel(object):
 			time.time();elapsed=time.time()-start_time
 			timerpt='\telapsed: '+str(elapsed);print(timerpt)
 			time.sleep(figsleep)
-			if not doloop:contin=False
+			if not doloop: break
 
 		if figclose:
 			time.sleep(finalsleep)
@@ -566,11 +491,12 @@ dodata=False
 chunk=40
 chunksleep=0
 
-maxiters=4400	# max iterations
+maxiters=2400	# max iterations
 
-boreme=False 	# pick a long orbit which escapes at the end
+boreme=False 	# False to pick a long orbit which escapes at the end
 minbored=440	# minimum non-boring orbit iterations
 maxrad=2.0		# defines the escape criterion
+
 trimend=4		# omits the final few iterations from some of the plots
 numbins=200		# no. of bins in the histograms
 
@@ -584,7 +510,7 @@ linesleep=0
 
 wid=1000;ht=700;xpos=10;ypos=100	# window size & posn
 wid=1200;ht=650;xpos=2100;ypos=100
-wid=1800;ht=1100;xpos=80;ypos=80
+wid=1800;ht=1100;xpos=30;ypos=30
 
 mygunmet='#113344';mygunmet2='#052529';myblue='#11aacc';mydkblue='#0000cc'
 myturq='#00ffff';myturq2='#11bbbb';myteal='#00ffcc';myteal2='#00ccaa'
