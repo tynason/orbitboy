@@ -41,7 +41,7 @@ class Mandel(object):
 			params=[];xdata=[];ydata=[];raddata=[];angdata=[]
 			xstats=[];ystats=[];radstats=[];angstats=[];ang2data=[]
 
-			flip=x=np.random.random_integers(1,2)
+			flip=x=np.random.random_integers(1,6)
 			if flip==1: # 5 period attractive
 				cx=np.random.uniform(0.355,0.360);cy=np.random.uniform(0.315,0.400)
 			elif flip==2: # 5 period repulsive
@@ -115,7 +115,7 @@ class Mandel(object):
 					ang_deg=180-math.degrees(ang)%360
 					ang2data.append(ang_deg)
 
-				ang2data=ang2data[1:]
+				ang2data.pop(0)
 
 		params=[k,cx,cy,angerror]
 		xmin=min(xdata[:k-trimend]);xmax=max(xdata[:k-trimend]);xavg=mean(xdata);xdev=std(xdata);xstats=[xmin,xmax,xavg,xdev]
@@ -185,19 +185,19 @@ class Mandel(object):
 		fig.patch.set_facecolor(rgbback)
 		plt.tight_layout(pad=0.1,w_pad=0.1,h_pad=0.5)
 		fig.subplots_adjust(top=0.935)
-
-		contin=True
 		nice=[];xnice=[];ynice=[] #list of non-boring orbits
 
-		while contin==True:
+		while True:
 			start_time=time.time()
 			result=self.datagen(maxiters)
-			rgbfore=self.getcolor()
 
-			lumon=(255,200,0)
+			#rgbfore=self.getcolor() # you can randomize this here
+			lumon=(255,20,200)  # this is the fore color of the plot gradient
 			lumon=list(map(lambda x: x/256,lumon))
-			lumoff=(0,125,125)
+
+			lumoff=(0,125,125) # this is the back color of the plot gradient
 			lumoff=list(map(lambda x: x/256,lumoff))
+
 			lumen=self.lumengen(lumon,lumoff,numgrads)
 			alumen=lumen[::-1]
 
@@ -219,10 +219,8 @@ class Mandel(object):
 			angavg=result[4][2];angdev=result[4][3]
 			#___________________________________________________________________#
 
-			# let's print some stuff
-
-			# full orbit stats print
-			if dodata:
+			# print some stuff
+			if dodata: # full orbit stats print
 				###################### PRINT HEADER ######################
 				print('\n')
 				myheader = ['kappa','n','xdata[n]','ydata[n]']
@@ -275,7 +273,7 @@ class Mandel(object):
 			print('\tlag:',lag)
 			#___________________________________________________________________#
 
-			# let's plot some stuff
+			# plot some stuff
 			mytitle='Mandelbrot ' +self.mandfunc+ '  p= '+str(p)+'  q= '+str(q)+'  kappa= '+str(kappa)+'  maxrad= '+str(maxrad)
 			fig.suptitle(mytitle,fontsize=9,color='#00ff00')
 			refreshall(self)
@@ -325,15 +323,9 @@ class Mandel(object):
 
 			ax10.hist(raddata[0:kappa-trimend],bins=numbins,normed=True,color=myyell)
 			ax12.hist(angdata[0:kappa-trimend],bins=numbins,normed=True,color=myyell2)
-
-			if not doani:
-				ax0.plot(xdata[0:kappa-trimend],ydata[0:kappa-trimend],lw=linewid,color=myteal)
-				ax5.plot(raddata[0:kappa-trimend],lw=linewid,color=myturq)
-				ax7.plot(angdata[0:kappa-trimend],lw=linewid,color=myteal)
 			#___________________________________________________________________#
 
-			# let's do some fourier stuff
-
+			# do some fourier stuff
 			data=raddata
 			datalbl='rad'
 			maxfreq=int(kappa/15)
@@ -371,11 +363,18 @@ class Mandel(object):
 			ax8.set_xlabel('period',fontsize=8,color=mybritegrn)
 			ax8.set_ylabel('FT('+datalbl+')',fontsize=8,color=mybritegrn)
 			ax8.plot(frq1[1:maxfreq],abs(Y1[1:maxfreq]),lw=linewid,color=myorange2)
+			
 			#___________________________________________________________________#
 
-			# homebrew quasi-animation
+			if not doani:
+				ax0.plot(xdata[0:kappa-trimend],ydata[0:kappa-trimend],lw=linewid,color=myteal)
+				ax5.plot(raddata[0:kappa-trimend],lw=linewid,color=myturq)
+				ax7.plot(angdata[0:kappa-trimend],lw=linewid,color=myteal)
+				plt.show(block=False);fig.canvas.draw()
 
-			if doani:
+			else:
+				# homebrew quasi-animation
+				#
 				# The -1 in xdata[n*lag-1:(n+1)*lag] is needed to make the line from the slice start from the last point in the previous slice
 				# so the orbit is connected which can be seen by print(n,n*lag-1,(n+1)*lag,xdata[n*lag-1:(n+1)*lag])
 				# But for the first slice this results in the slice [-1:0] which means it tries to start at the last element "thru" the first
@@ -390,21 +389,18 @@ class Mandel(object):
 				ax7.set_xlim(0,kappa-trimend);ax7.set_ylim(angmin,angmax)
 
 				n=0
-				#print('\nFIRST SLICE') # handle first slice manually
-				#print('n,n*lag,(n+1)*lag,xdata[n*lag:(n+1)*lag]')
-				#print(n,n*lag,(n+1)*lag,xdata[n*lag:(n+1)*lag])
 				ax0.plot(xdata[n*lag:(n+1)*lag],ydata[n*lag:(n+1)*lag],lw=linewid,color=alumen[n])
 
 				#ax5.plot(raddata[n*lag:(n+1)*lag],lw=linewid,color=alumen[n])
 				xx=np.arange(n*lag,(n+1)*lag)
 				yy=np.array(raddata[n*lag:(n+1)*lag])
-				if len(xx)!=len(yy): xx.pop() #del xx[-1]
+				if len(xx)!=len(yy): xx.pop() # delete last item in list if they don't match
 				ax5.plot(xx,yy,lw=linewid,color=alumen[n])
 
 				#ax7.plot(angdata[n*lag:(n+1)*lag],lw=linewid,color=alumen[n])
 				xx=np.arange(n*lag,(n+1)*lag)
 				yy=np.array(angdata[n*lag:(n+1)*lag])
-				if len(xx)!=len(yy): xx.pop() #del xx[-1]
+				if len(xx)!=len(yy): xx.pop() 
 				ax7.plot(xx,yy,lw=linewid,color=alumen[n])
 
 				# histograms
@@ -421,13 +417,16 @@ class Mandel(object):
 
 					try:
 						n+=1
+						#print('n,n*lag-1,(n+1)*lag,xdata[n*lag-1:(n+1)*lag]')
+						#print(n,n*lag-1,(n+1)*lag,xdata[n*lag-1:(n+1)*lag])
+
 						ax0.plot(xdata[n*lag-1:(n+1)*lag],ydata[n*lag-1:(n+1)*lag],lw=linewid,color=alumen[n])
 						
 						yy=np.array(raddata[n*lag:(n+1)*lag])
 						xx=np.arange(n*lag,n*lag+len(yy))
 
 						if len(xx)!=len(yy):
-							xx.pop() #del xx[-1]
+							xx.pop()
 							print('EXCEPTION rad')
 							print('n,p,q',n,p,q)
 							print('lenxx,lenyy',len(xx),len(yy))
@@ -436,7 +435,7 @@ class Mandel(object):
 						yy=np.array(angdata[n*lag-1:(n+1)*lag])
 						xx=np.arange(n*lag,n*lag+len(yy))
 						if len(xx)!=len(yy):
-							xx.pop() #del xx[-1]	
+							xx.pop()
 							print('EXCEPTION ang')
 							print('n,p,q',n,p,q)
 							print('lenxx,lenyy',len(xx),len(yy))
@@ -445,8 +444,8 @@ class Mandel(object):
 						# histograms
 						refreshone(self,10);refreshone(self,12)
 						ax10.set_xlim(0,radmax);ax12.set_xlim(0,angmax)
-						ax10.hist(raddata[0:(n+1)*lag],bins=numbins,normed=True,color=myyell)
-						ax12.hist(angdata[0:(n+1)*lag],bins=numbins,normed=True,color=myyell2)
+						ax10.hist(raddata[0:(n+1)*lag],bins=numbins,normed=True,color=alumen[n])
+						ax12.hist(angdata[0:(n+1)*lag],bins=numbins,normed=True,color=alumen[n])
 
 						plt.show(block=False);fig.canvas.draw()
 						time.sleep(linesleep)
@@ -518,9 +517,9 @@ minbored=440	# minimum non-boring orbit iterations
 maxrad=2.0		# defines the escape criterion
 
 trimend=4		# omits the final few iterations from some of the plots
-numbins=100		# no. of bins in the histograms
+numbins=130		# no. of bins in the histograms
 
-numgrads=9 		# how many slices to plot the animated orbit
+numgrads=20		# how many slices to plot the animated orbit
 linewid=.4		# line width
 
 figclose=False 	# close after plotting
@@ -532,11 +531,16 @@ wid=1000;ht=700;xpos=10;ypos=100	# window size & posn
 wid=1200;ht=650;xpos=2100;ypos=100
 wid=1800;ht=1100;xpos=80;ypos=80
 
-mygunmet='#113344';mygunmet2='#052529';myblue='#11aacc';mydkblue='#0000cc'
+mygunmet='#113344';myblue='#11aacc';mydkblue='#0000cc'
 myturq='#00ffff';myturq2='#11bbbb';myteal='#00ffcc';myteal2='#00ccaa'
 mygreen='#44bb44';mybritegrn='#00ff66';myfuscia='#ff00ff';myfuscia2='#dd0099'
 mypurp='#ff00cc';mypurp2='#9933ff';myred='#cc0000';myorange='#ffaa00'
-myorange2='#ff6600';myyell='#ffff00';myyell2='#ffcc00';rgbback=mygunmet2
+myorange2='#ff6600';myyell='#ffff00';myyell2='#ffcc00'
+
+
+mygunmet2='#05ffaa'
+mygunmet2='#052529'
+rgbback=mygunmet2
 
 mymand=Mandel(boreme,minbored,xpos,ypos,wid,ht,figsleep,finalsleep)
 mymand.plotme()
