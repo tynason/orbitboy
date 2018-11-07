@@ -19,7 +19,7 @@ from mysql.connector import errorcode
 
 class Mandel(object):
 	def __init__(self,boreme,minbored,xpos,ypos,wid,ht,figsleep,finalsleep):
-		pass
+		pass # to make it a real class, need to redo vars as self.vars, so for now it's just a script
 
 	def getcolor(self):
 		r=np.random.uniform(0,1)
@@ -59,7 +59,6 @@ class Mandel(object):
 			#___________________________________________________________________#
 
 			xdata.append(cx);ydata.append(cy)
-
 			self.mandfunc='z*z+c'
 
 			k=0;c=complex(cx,cy);z=complex(0.0,0.0)
@@ -78,10 +77,8 @@ class Mandel(object):
 				else: continue # keep looking
 
 		for n in range(0,k-2):
-		
 			rad=xdata[n]**2+ydata[n]**2
 			raddata.append(rad)
-
 
 			# external angle
 			angerror='none'	
@@ -92,7 +89,6 @@ class Mandel(object):
 			else:
 				ang=math.atan2(ydata[n],xdata[n]);ang=math.degrees(ang)%360
 			angdata.append(ang)
-		
 
 			if doang:
 				for n in range(0,k-2):  # internal angle; needs TRY EXCEPT
@@ -120,7 +116,6 @@ class Mandel(object):
 					ang2data.append(ang_deg)
 
 				ang2data=ang2data[1:]
-				
 
 		params=[k,cx,cy,angerror]
 		xmin=min(xdata[:k-trimend]);xmax=max(xdata[:k-trimend]);xavg=mean(xdata);xdev=std(xdata);xstats=[xmin,xmax,xavg,xdev]
@@ -128,7 +123,6 @@ class Mandel(object):
 		radmin=min(raddata);radmax=max(raddata);radavg=mean(raddata);raddev=std(raddata);radstats=[radmin,radmax,radavg,raddev]
 		angmin=min(angdata);angmax=max(angdata);angavg=mean(angdata);angdev=std(angdata);angstats=[angmin,angmax,angavg,angdev]
 		return params,xstats,ystats,radstats,angstats,xdata,ydata,raddata,angdata,boredcount,ang2data
-
 
 	def plotme(self):
 
@@ -223,8 +217,6 @@ class Mandel(object):
 			ang2data=result[10]
 			radavg=result[3][2];raddev=result[3][3]
 			angavg=result[4][2];angdev=result[4][3]
-
-
 			#___________________________________________________________________#
 
 			# let's print some stuff
@@ -333,12 +325,14 @@ class Mandel(object):
 
 			ax10.hist(raddata[0:kappa-trimend],bins=numbins,normed=True,color=myyell)
 			ax12.hist(angdata[0:kappa-trimend],bins=numbins,normed=True,color=myyell2)
+
 			if not doani:
 				ax0.plot(xdata[0:kappa-trimend],ydata[0:kappa-trimend],lw=linewid,color=myteal)
 				ax5.plot(raddata[0:kappa-trimend],lw=linewid,color=myturq)
 				ax7.plot(angdata[0:kappa-trimend],lw=linewid,color=myteal)
-			
 			#___________________________________________________________________#
+
+			# let's do some fourier stuff
 
 			data=raddata
 			datalbl='rad'
@@ -379,11 +373,9 @@ class Mandel(object):
 			ax8.plot(frq1[1:maxfreq],abs(Y1[1:maxfreq]),lw=linewid,color=myorange2)
 			#___________________________________________________________________#
 
-			plt.show(block=False);fig.canvas.draw()
-			refreshone(self,5);refreshone(self,7)
+			# homebrew quasi-animation
 
 			if doani:
-
 				# The -1 in xdata[n*lag-1:(n+1)*lag] is needed to make the line from the slice start from the last point in the previous slice
 				# so the orbit is connected which can be seen by print(n,n*lag-1,(n+1)*lag,xdata[n*lag-1:(n+1)*lag])
 				# But for the first slice this results in the slice [-1:0] which means it tries to start at the last element "thru" the first
@@ -393,43 +385,68 @@ class Mandel(object):
 				# so there will typically be a few points at the end not covered by the loop;
 				# these are handled manually after the loop.
 
+				refreshone(self,5);refreshone(self,7)
 				ax5.set_xlim(0,kappa-trimend);ax5.set_ylim(radmin,radmax)
 				ax7.set_xlim(0,kappa-trimend);ax7.set_ylim(angmin,angmax)
 
 				n=0
 				#print('\nFIRST SLICE') # handle first slice manually
+				#print('n,n*lag,(n+1)*lag,xdata[n*lag:(n+1)*lag]')
+				#print(n,n*lag,(n+1)*lag,xdata[n*lag:(n+1)*lag])
 				ax0.plot(xdata[n*lag:(n+1)*lag],ydata[n*lag:(n+1)*lag],lw=linewid,color=alumen[n])
 
+				#ax5.plot(raddata[n*lag:(n+1)*lag],lw=linewid,color=alumen[n])
 				xx=np.arange(n*lag,(n+1)*lag)
 				yy=np.array(raddata[n*lag:(n+1)*lag])
 				if len(xx)!=len(yy): xx.pop() #del xx[-1]
 				ax5.plot(xx,yy,lw=linewid,color=alumen[n])
 
+				#ax7.plot(angdata[n*lag:(n+1)*lag],lw=linewid,color=alumen[n])
 				xx=np.arange(n*lag,(n+1)*lag)
 				yy=np.array(angdata[n*lag:(n+1)*lag])
 				if len(xx)!=len(yy): xx.pop() #del xx[-1]
 				ax7.plot(xx,yy,lw=linewid,color=alumen[n])
 
+				# histograms
+				refreshone(self,10);refreshone(self,12)
+				ax10.set_xlim(0,radmax);ax12.set_xlim(0,angmax)
+				ax10.hist(raddata[0:(n+1)*lag],bins=numbins,normed=True,color=myyell)
+				ax12.hist(angdata[0:(n+1)*lag],bins=numbins,normed=True,color=myyell2)
+
 				plt.show(block=False);fig.canvas.draw()
 				time.sleep(linesleep)
 
-
+				#for n in range(1,numgrads):
 				while (n+1)*lag<kappa-lag:
 
 					try:
 						n+=1
-
 						ax0.plot(xdata[n*lag-1:(n+1)*lag],ydata[n*lag-1:(n+1)*lag],lw=linewid,color=alumen[n])
 						
 						yy=np.array(raddata[n*lag:(n+1)*lag])
 						xx=np.arange(n*lag,n*lag+len(yy))
-						if len(xx)!=len(yy): xx.pop() #del xx[-1]
+
+						if len(xx)!=len(yy):
+							xx.pop() #del xx[-1]
+							print('EXCEPTION rad')
+							print('n,p,q',n,p,q)
+							print('lenxx,lenyy',len(xx),len(yy))
 						ax5.plot(xx,yy,lw=linewid,color=alumen[n])
 
 						yy=np.array(angdata[n*lag-1:(n+1)*lag])
 						xx=np.arange(n*lag,n*lag+len(yy))
-						if len(xx)!=len(yy): xx.pop() #del xx[-1]
+						if len(xx)!=len(yy):
+							xx.pop() #del xx[-1]	
+							print('EXCEPTION ang')
+							print('n,p,q',n,p,q)
+							print('lenxx,lenyy',len(xx),len(yy))
 						ax7.plot(xx,yy,lw=linewid,color=alumen[n])
+
+						# histograms
+						refreshone(self,10);refreshone(self,12)
+						ax10.set_xlim(0,radmax);ax12.set_xlim(0,angmax)
+						ax10.hist(raddata[0:(n+1)*lag],bins=numbins,normed=True,color=myyell)
+						ax12.hist(angdata[0:(n+1)*lag],bins=numbins,normed=True,color=myyell2)
 
 						plt.show(block=False);fig.canvas.draw()
 						time.sleep(linesleep)
@@ -438,6 +455,9 @@ class Mandel(object):
 						# on the last slice, which will prob not be a full slice,
 						# the lists/arrays xx and yy are sometimes not the same length causing an exception
 						# so we should prob treat the last slice separately and carefully
+						print('EXCEPTION caught; SEGMENT NOT PLOTTED; post-correction values:')
+						print('n,p,q',n,p,q)
+						print('lenxx,lenyy',len(xx),len(yy))
 						continue
 
 				n=numgrads-1
@@ -449,7 +469,7 @@ class Mandel(object):
 			if dosave: 
 				# save to DB if it exists
 				try:
-					cnx = mysql.connector.connect(user='root', password='YOURMYSQLPASSWORD**', host='127.0.0.1', database='mandel')
+					cnx = mysql.connector.connect(user='root', password='YOURMYSQLPASSWORD', host='127.0.0.1', database='mandel')
 					cursor = cnx.cursor()
 					add_orbit = 'INSERT INTO orbit (p,q,kappa,maxrad,radavg,raddev,angavg,angdev) ' + 'VALUES ('+str(p)+','+str(q)+','+str(kappa)+','+str(maxrad)+','+str(radavg)+','+str(raddev)+','+str(angavg)+','+str(angdev)+')'
 					cursor.execute(add_orbit)
@@ -491,14 +511,14 @@ dodata=False
 chunk=40
 chunksleep=0
 
-maxiters=2400	# max iterations
+maxiters=24000	# max iterations
 
-boreme=False 	# False to pick a long orbit which escapes at the end
+boreme=False 	#  False to pick a long orbit which escapes at the end
 minbored=440	# minimum non-boring orbit iterations
 maxrad=2.0		# defines the escape criterion
 
 trimend=4		# omits the final few iterations from some of the plots
-numbins=200		# no. of bins in the histograms
+numbins=100		# no. of bins in the histograms
 
 numgrads=9 		# how many slices to plot the animated orbit
 linewid=.4		# line width
@@ -510,7 +530,7 @@ linesleep=0
 
 wid=1000;ht=700;xpos=10;ypos=100	# window size & posn
 wid=1200;ht=650;xpos=2100;ypos=100
-wid=1800;ht=1100;xpos=30;ypos=30
+wid=1800;ht=1100;xpos=80;ypos=80
 
 mygunmet='#113344';mygunmet2='#052529';myblue='#11aacc';mydkblue='#0000cc'
 myturq='#00ffff';myturq2='#11bbbb';myteal='#00ffcc';myteal2='#00ccaa'
