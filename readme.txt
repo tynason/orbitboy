@@ -38,7 +38,7 @@ _______________________________________
 
 Notes on params:
 
-	doani=True 	# animate the orbit, rad, ang and histogram plots
+	doani=True 	# animate the orbit, rad, and ang plots
 
 This will animate the orbit, radius and angle plots but does slow down the plotting. I'm not using any blt or the canned animation routines in python just a manual slicing so set to False if you want.
 
