@@ -163,14 +163,14 @@ class Mandel(object):
 		ax4 = plt.subplot2grid((4,6),(3,1))
 
 		ax5 = plt.subplot2grid((4,6),(0,2),colspan=2)
-		ax6 = plt.subplot2grid((4,6),(0,4),colspan=2)
+		ax10 = plt.subplot2grid((4,6),(0,4),colspan=2)
 		ax7 = plt.subplot2grid((4,6),(1,2),colspan=2)
-		ax8 = plt.subplot2grid((4,6),(1,4),colspan=2)
+		ax12 = plt.subplot2grid((4,6),(1,4),colspan=2)
 
 		ax9 = plt.subplot2grid((4,6),(2,2),colspan=2)
-		ax10 = plt.subplot2grid((4,6),(2,4),colspan=2)
+		ax6 = plt.subplot2grid((4,6),(2,4),colspan=2)
 		ax11 = plt.subplot2grid((4,6),(3,2),colspan=2)
-		ax12 = plt.subplot2grid((4,6),(3,4),colspan=2)
+		ax8 = plt.subplot2grid((4,6),(3,4),colspan=2)
 
 		# initial subplot settings
 		for ax in fig.axes:
@@ -189,18 +189,20 @@ class Mandel(object):
 
 		while True:
 			start_time=time.time()
-			result=self.datagen(maxiters)
 
-			#rgbfore=self.getcolor() # you can randomize this here
-			lumon=(255,20,200)  # this is the fore color of the plot gradient
+			# deal with colors here
+			# lumon=self.getcolor() # can randomize the fore color here, need to rgb it 
+			lumon=(255,20,200) # this is the fore color of the plot gradient
 			lumon=list(map(lambda x: x/256,lumon))
-
 			lumoff=(0,125,125) # this is the back color of the plot gradient
 			lumoff=list(map(lambda x: x/256,lumoff))
-
 			lumen=self.lumengen(lumon,lumoff,numgrads)
 			alumen=lumen[::-1]
 
+			# get the data for an orbit
+			result=self.datagen(maxiters)
+
+			# set names for result of datagen here
 			params=result[0]
 			kappa=params[0];p=params[1];q=params[2];boredcount=result[9];angerr=params[3]
 
@@ -363,7 +365,6 @@ class Mandel(object):
 			ax8.set_xlabel('period',fontsize=8,color=mybritegrn)
 			ax8.set_ylabel('FT('+datalbl+')',fontsize=8,color=mybritegrn)
 			ax8.plot(frq1[1:maxfreq],abs(Y1[1:maxfreq]),lw=linewid,color=myorange2)
-			
 			#___________________________________________________________________#
 
 			if not doani:
@@ -389,6 +390,9 @@ class Mandel(object):
 				ax7.set_xlim(0,kappa-trimend);ax7.set_ylim(angmin,angmax)
 
 				n=0
+				#print('\nFIRST SLICE') # handle first slice manually
+				#print('n,n*lag,(n+1)*lag,xdata[n*lag:(n+1)*lag]')
+				#print(n,n*lag,(n+1)*lag,xdata[n*lag:(n+1)*lag])
 				ax0.plot(xdata[n*lag:(n+1)*lag],ydata[n*lag:(n+1)*lag],lw=linewid,color=alumen[n])
 
 				#ax5.plot(raddata[n*lag:(n+1)*lag],lw=linewid,color=alumen[n])
@@ -404,7 +408,8 @@ class Mandel(object):
 				ax7.plot(xx,yy,lw=linewid,color=alumen[n])
 
 				# histograms
-				refreshone(self,10);refreshone(self,12)
+				#refreshone(self,10);refreshone(self,12)
+				refreshone(self,6);refreshone(self,8)
 				ax10.set_xlim(0,radmax);ax12.set_xlim(0,angmax)
 				ax10.hist(raddata[0:(n+1)*lag],bins=numbins,normed=True,color=alumen[n])
 				ax12.hist(angdata[0:(n+1)*lag],bins=numbins,normed=True,color=alumen[n])
@@ -425,24 +430,17 @@ class Mandel(object):
 						yy=np.array(raddata[n*lag:(n+1)*lag])
 						xx=np.arange(n*lag,n*lag+len(yy))
 
-						if len(xx)!=len(yy):
-							xx.pop()
-							print('EXCEPTION rad')
-							print('n,p,q',n,p,q)
-							print('lenxx,lenyy',len(xx),len(yy))
+						if len(xx)!=len(yy): xx.pop()
 						ax5.plot(xx,yy,lw=linewid,color=alumen[n])
 
 						yy=np.array(angdata[n*lag-1:(n+1)*lag])
 						xx=np.arange(n*lag,n*lag+len(yy))
-						if len(xx)!=len(yy):
-							xx.pop()
-							print('EXCEPTION ang')
-							print('n,p,q',n,p,q)
-							print('lenxx,lenyy',len(xx),len(yy))
+						if len(xx)!=len(yy): xx.pop()
 						ax7.plot(xx,yy,lw=linewid,color=alumen[n])
 
 						# histograms
-						refreshone(self,10);refreshone(self,12)
+						#refreshone(self,10);refreshone(self,12)
+						refreshone(self,6);refreshone(self,8)
 						ax10.set_xlim(0,radmax);ax12.set_xlim(0,angmax)
 						ax10.hist(raddata[0:(n+1)*lag],bins=numbins,normed=True,color=alumen[n])
 						ax12.hist(angdata[0:(n+1)*lag],bins=numbins,normed=True,color=alumen[n])
@@ -517,9 +515,9 @@ minbored=440	# minimum non-boring orbit iterations
 maxrad=2.0		# defines the escape criterion
 
 trimend=4		# omits the final few iterations from some of the plots
-numbins=130		# no. of bins in the histograms
+numbins=120		# no. of bins in the histograms
 
-numgrads=20		# how many slices to plot the animated orbit
+numgrads=6		# how many slices to plot the animated orbit
 linewid=.4		# line width
 
 figclose=False 	# close after plotting
@@ -529,7 +527,7 @@ linesleep=0
 
 wid=1000;ht=700;xpos=10;ypos=100	# window size & posn
 wid=1200;ht=650;xpos=2100;ypos=100
-wid=1800;ht=1100;xpos=80;ypos=80
+wid=1800;ht=1100;xpos=30;ypos=30
 
 mygunmet='#113344';myblue='#11aacc';mydkblue='#0000cc'
 myturq='#00ffff';myturq2='#11bbbb';myteal='#00ffcc';myteal2='#00ccaa'
@@ -537,8 +535,6 @@ mygreen='#44bb44';mybritegrn='#00ff66';myfuscia='#ff00ff';myfuscia2='#dd0099'
 mypurp='#ff00cc';mypurp2='#9933ff';myred='#cc0000';myorange='#ffaa00'
 myorange2='#ff6600';myyell='#ffff00';myyell2='#ffcc00'
 
-
-mygunmet2='#05ffaa'
 mygunmet2='#052529'
 rgbback=mygunmet2
 
