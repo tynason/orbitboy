@@ -22,13 +22,19 @@ class Mandel(object):
 		pass # to make it a real class, need to redo vars as self.vars, so for now it's just a script
 
 	def getcolor(self):
-		r=np.random.uniform(0,1)
-		b=np.random.uniform(0,1)
-		g=np.random.uniform(0,1)
-		return (r,b,g)
+		brite=0
+		while True:
+			r=np.random.uniform(0.4,0.8)
+			g=np.random.uniform(0.0,0.2)
+			b=np.random.uniform(0.4,0.8)
 
-	def lumengen(self,fore,back,grads): # get colors between fore and back color
-		rangeRGB=[x1 - x2 for (x1,x2) in zip(fore,back)] # the range of RGB[0-1] to be covered
+			# not too dark
+			if r>0.6 or b>0.6: break
+		print('rgb: ',r,g,b)
+		return (r,g,b)
+
+	def lumengen(self,fore,back,grads): # get colors between start (back) and end (fore) colors
+		rangeRGB=[x1-x2 for (x1,x2) in zip(fore,back)] # the range of RGB[0-1] to be covered
 		segRGB=list(map(lambda x: x/grads,rangeRGB)) # the amount to decrement each element RGB
 		R=np.zeros((grads,));G=np.zeros((grads,));B=np.zeros((grads,)) # start w/fore and decrement to back
 		for nn in range(numgrads): R[nn]=fore[0]-nn*segRGB[0];G[nn]=fore[1]-nn*segRGB[1];B[nn]=fore[2]-nn*segRGB[2]
@@ -67,10 +73,10 @@ class Mandel(object):
 				xdata.append(z.real);ydata.append(z.imag)
 			
 			if boreme:
-				if k>=minbored: # we don't care if it's boring so stop looking
+				if k>=minbored: # it's boring but over the minbored, so stop looking
 					print('BORING #',boredcount,'kappa=',k,'\tcx=',cx,'\tcy=',cy)
 					break # go on to calculate stats and return
-				else: continue # keep looking
+				else: continue # it's less then minbored so keep looking
 			else:
 				if k>minbored and k<maxiterrs: # we found a non-boring one
 					break # go on to calculate stats and return
@@ -90,7 +96,7 @@ class Mandel(object):
 				ang=math.atan2(ydata[n],xdata[n]);ang=math.degrees(ang)%360
 			angdata.append(ang)
 
-			if doang:
+			if doang: # math seems wrong here, need to revisit
 				for n in range(0,k-2):  # internal angle; needs TRY EXCEPT
 					point1=xdata[n],ydata[n];point2=xdata[n+1],ydata[n+1];point3=xdata[n+2],ydata[n+2]
 					lineA=([point1[0],point1[1]]),([point2[0],point2[1]]);lineB=point2,point3
@@ -101,11 +107,9 @@ class Mandel(object):
 					if abs(magA)<1e-8:
 						angerror='magA=0'
 						print('EXCEPTION angerror: ', angerror); break
-
 					if abs(magB)<1e-8:
 						angerror='magB=0'
 						print('EXCEPTION angerror: ', angerror); break
-
 					argg=dot_prod/magB/magA
 					if abs(argg)>1:
 						angerror='arccos(arg>1)'
@@ -163,14 +167,14 @@ class Mandel(object):
 		ax4 = plt.subplot2grid((4,6),(3,1))
 
 		ax5 = plt.subplot2grid((4,6),(0,2),colspan=2)
-		ax10 = plt.subplot2grid((4,6),(0,4),colspan=2)
+		ax6 = plt.subplot2grid((4,6),(0,4),colspan=2)
 		ax7 = plt.subplot2grid((4,6),(1,2),colspan=2)
-		ax12 = plt.subplot2grid((4,6),(1,4),colspan=2)
+		ax8 = plt.subplot2grid((4,6),(1,4),colspan=2)
 
 		ax9 = plt.subplot2grid((4,6),(2,2),colspan=2)
-		ax6 = plt.subplot2grid((4,6),(2,4),colspan=2)
+		ax10 = plt.subplot2grid((4,6),(2,4),colspan=2)
 		ax11 = plt.subplot2grid((4,6),(3,2),colspan=2)
-		ax8 = plt.subplot2grid((4,6),(3,4),colspan=2)
+		ax12 = plt.subplot2grid((4,6),(3,4),colspan=2)
 
 		# initial subplot settings
 		for ax in fig.axes:
@@ -191,10 +195,19 @@ class Mandel(object):
 			start_time=time.time()
 
 			# deal with colors here
-			# lumon=self.getcolor() # can randomize the fore color here, need to rgb it 
-			lumon=(255,20,200) # this is the fore color of the plot gradient
+			# lumon is the end color of the plot gradient
+			lumon=(255,20,200) # your standard fuscia
 			lumon=list(map(lambda x: x/256,lumon))
-			lumoff=(0,125,125) # this is the back color of the plot gradient
+
+			#randomize the fore color here
+			resultt=self.getcolor()
+			lumon=resultt
+			#print(resultt)
+
+
+
+			# lumoff is the start color of the plot gradient
+			lumoff=(0,125,125) # your standard dark teal
 			lumoff=list(map(lambda x: x/256,lumoff))
 			lumen=self.lumengen(lumon,lumoff,numgrads)
 			alumen=lumen[::-1]
@@ -273,6 +286,24 @@ class Mandel(object):
 			print('\tnumgrads',numgrads)
 			print('\ttrimend:',trimend)
 			print('\tlag:',lag)
+
+			"""
+			# horizontal params print
+			myheader = ['kappa','p','q','maxrad','maxiters','radavg','raddev','angavg','angdev','angerror']
+			for item in myheader: print('{: <22}'.format(item),end='')
+			print('\n')
+			mydata = [kappa,p,q,maxrad,maxiters,radavg,raddev,angavg,angdev,angerror]
+			for item in mydata: print('{: <22}'.format(item),end='')
+			print('\n')
+
+			# horizontal params print
+			myheader = ['boreme','minbored','numbins','numgrads','trimend','lag']
+			for item in myheader: print('{: <22}'.format(item),end='')
+			print('\n')
+			mydata = [boreme,minbored,numbins,numgrads,trimend,lag]
+			for item in mydata: print('{: <22}'.format(item),end='')
+			print('\n')
+			"""
 			#___________________________________________________________________#
 
 			# plot some stuff
@@ -308,23 +339,23 @@ class Mandel(object):
 			ax9.set_title('rad vs k last 1/10',loc='left',fontsize=8,color=mybritegrn)
 			ax9.plot(raddata[end4:],lw=linewid,color=myturq)
 
-			ax10.set_title('rad hist',loc='left',fontsize=8,color=mybritegrn)
-			ax10.set_xlabel('rad',fontsize=8,color=mybritegrn)
-			ax10.set_ylabel('# in bin',fontsize=8,color=mybritegrn)			
+			ax6.set_title('rad hist',loc='left',fontsize=8,color=mybritegrn)
+			ax6.set_xlabel('rad',fontsize=8,color=mybritegrn)
+			ax6.set_ylabel('# in bin',fontsize=8,color=mybritegrn)			
 
 			ax11.set_title('ang vs k last 1/10',loc='left',fontsize=8,color=mybritegrn)
 			ax11.plot(angdata[end4:],lw=linewid,color=myteal)
 			
-			ax12.set_title('ang hist',loc='left',fontsize=8,color=mybritegrn)
-			ax12.set_xlabel('ang',fontsize=8,color=mybritegrn)
-			ax12.set_ylabel('# in bin',fontsize=8,color=mybritegrn)			
+			ax8.set_title('ang hist',loc='left',fontsize=8,color=mybritegrn)
+			ax8.set_xlabel('ang',fontsize=8,color=mybritegrn)
+			ax8.set_ylabel('# in bin',fontsize=8,color=mybritegrn)			
 
 			ax0.set_xlim(xmin,xmax);ax0.set_ylim(ymin,ymax)
 			ax5.set_xlim(0,kappa-trimend);ax5.set_ylim(radmin,radmax)
 			ax7.set_xlim(0,kappa-trimend);ax7.set_ylim(angmin,angmax)
 
-			ax10.hist(raddata[0:kappa-trimend],bins=numbins,normed=True,color=myyell)
-			ax12.hist(angdata[0:kappa-trimend],bins=numbins,normed=True,color=myyell2)
+			ax6.hist(raddata[0:kappa-trimend],bins=numbins,normed=True,color=myyell)
+			ax8.hist(angdata[0:kappa-trimend],bins=numbins,normed=True,color=myyell2)
 			#___________________________________________________________________#
 
 			# do some fourier stuff
@@ -342,10 +373,10 @@ class Mandel(object):
 			Y2 = 2*np.fft.fft(data)/n # fft computing and norm
 			Y1 = Y2[1:int(n/2)]
 
-			ax6.set_title('FT('+datalbl+') vs period   Fsamp=300',loc='left',fontsize=8,color=mybritegrn)
-			ax6.set_xlabel('period',fontsize=8,color=mybritegrn)
-			ax6.set_ylabel('FT('+datalbl+')',fontsize=8,color=mybritegrn)
-			ax6.plot(frq1[1:maxfreq],abs(Y1[1:maxfreq]),lw=linewid,color=myorange)
+			ax10.set_title('FT('+datalbl+') vs period   Fsamp=300',loc='left',fontsize=8,color=mybritegrn)
+			ax10.set_xlabel('period',fontsize=8,color=mybritegrn)
+			ax10.set_ylabel('FT('+datalbl+')',fontsize=8,color=mybritegrn)
+			ax10.plot(frq1[1:maxfreq],abs(Y1[1:maxfreq]),lw=linewid,color=myorange)
 
 			data=angdata
 			datalbl='ang'
@@ -361,10 +392,10 @@ class Mandel(object):
 			Y2 = 2*np.fft.fft(data)/n # fft computing and norm
 			Y1 = Y2[1:int(n/2)]
 
-			ax8.set_title('FT('+datalbl+') vs period   Fsamp=300',loc='left',fontsize=8,color=mybritegrn)
-			ax8.set_xlabel('period',fontsize=8,color=mybritegrn)
-			ax8.set_ylabel('FT('+datalbl+')',fontsize=8,color=mybritegrn)
-			ax8.plot(frq1[1:maxfreq],abs(Y1[1:maxfreq]),lw=linewid,color=myorange2)
+			ax12.set_title('FT('+datalbl+') vs period   Fsamp=300',loc='left',fontsize=8,color=mybritegrn)
+			ax12.set_xlabel('period',fontsize=8,color=mybritegrn)
+			ax12.set_ylabel('FT('+datalbl+')',fontsize=8,color=mybritegrn)
+			ax12.plot(frq1[1:maxfreq],abs(Y1[1:maxfreq]),lw=linewid,color=myorange2)
 			#___________________________________________________________________#
 
 			if not doani:
@@ -410,9 +441,9 @@ class Mandel(object):
 				# histograms
 				#refreshone(self,10);refreshone(self,12)
 				refreshone(self,6);refreshone(self,8)
-				ax10.set_xlim(0,radmax);ax12.set_xlim(0,angmax)
-				ax10.hist(raddata[0:(n+1)*lag],bins=numbins,normed=True,color=alumen[n])
-				ax12.hist(angdata[0:(n+1)*lag],bins=numbins,normed=True,color=alumen[n])
+				ax6.set_xlim(0,radmax);ax8.set_xlim(0,angmax)
+				ax6.hist(raddata[0:(n+1)*lag],bins=numbins,normed=True,color=alumen[n])
+				ax8.hist(angdata[0:(n+1)*lag],bins=numbins,normed=True,color=alumen[n])
 
 				plt.show(block=False);fig.canvas.draw()
 				time.sleep(linesleep)
@@ -441,9 +472,9 @@ class Mandel(object):
 						# histograms
 						#refreshone(self,10);refreshone(self,12)
 						refreshone(self,6);refreshone(self,8)
-						ax10.set_xlim(0,radmax);ax12.set_xlim(0,angmax)
-						ax10.hist(raddata[0:(n+1)*lag],bins=numbins,normed=True,color=alumen[n])
-						ax12.hist(angdata[0:(n+1)*lag],bins=numbins,normed=True,color=alumen[n])
+						ax6.set_xlim(0,radmax);ax8.set_xlim(0,angmax)
+						ax6.hist(raddata[0:(n+1)*lag],bins=numbins,normed=True,color=alumen[n])
+						ax8.hist(angdata[0:(n+1)*lag],bins=numbins,normed=True,color=alumen[n])
 
 						plt.show(block=False);fig.canvas.draw()
 						time.sleep(linesleep)
@@ -509,15 +540,15 @@ chunk=40
 chunksleep=0
 
 maxiters=24000	# max iterations
+minbored=2000	# minimum non-boring orbit iterations
 
 boreme=False 	#  False to pick a long orbit which escapes at the end
-minbored=440	# minimum non-boring orbit iterations
 maxrad=2.0		# defines the escape criterion
 
 trimend=4		# omits the final few iterations from some of the plots
 numbins=120		# no. of bins in the histograms
 
-numgrads=6		# how many slices to plot the animated orbit
+numgrads=14		# how many slices to plot the animated orbit
 linewid=.4		# line width
 
 figclose=False 	# close after plotting
@@ -528,6 +559,7 @@ linesleep=0
 wid=1000;ht=700;xpos=10;ypos=100	# window size & posn
 wid=1200;ht=650;xpos=2100;ypos=100
 wid=1800;ht=1100;xpos=30;ypos=30
+wid=2100;ht=1400;xpos=30;ypos=30
 
 mygunmet='#113344';myblue='#11aacc';mydkblue='#0000cc'
 myturq='#00ffff';myturq2='#11bbbb';myteal='#00ffcc';myteal2='#00ccaa'
