@@ -5,7 +5,7 @@
 # ted nason 2018
 # https://github.com/tynason/orbitboy
 #___________________________________________________________________#
-import matplotlib.pyplot as plt
+import matplotlib as mpl
 from pylab import *
 import scipy.fftpack
 import numpy as np
@@ -14,12 +14,18 @@ import datetime
 import time
 import os
 import mysql.connector
-from mysql.connector import errorcode
 #___________________________________________________________________#
 
 class Mandel(object):
 	def __init__(self,boreme,minbored,xpos,ypos,wid,ht,figsleep,finalsleep):
 		pass # to make it a real class, need to redo vars as self.vars, so for now it's just a script
+
+	# https://matplotlib.org/users/customizing.html
+	mpl.rcParams['font.size']=8
+	mpl.rcParams['axes.labelsize']=8
+	mpl.rcParams['xtick.color']='#ffffff'
+	mpl.rcParams['ytick.color']='#ffffff'
+	mpl.rcParams['lines.linewidth']=0.4
 
 	def getcolor(self):
 		brite=0
@@ -27,7 +33,6 @@ class Mandel(object):
 			r=np.random.uniform(0.4,0.8)
 			g=np.random.uniform(0.0,0.2)
 			b=np.random.uniform(0.4,0.8)
-
 			# not too dark
 			if r>0.6 or b>0.6: break
 		print('rgb: ',r,g,b)
@@ -41,6 +46,7 @@ class Mandel(object):
 		return list(zip(R,G,B))
 
 	def datagen(self,maxiterrs):
+		print('searching...')
 		boredcount=0 
 		while True:
 			boredcount+=1
@@ -96,8 +102,12 @@ class Mandel(object):
 				ang=math.atan2(ydata[n],xdata[n]);ang=math.degrees(ang)%360
 			angdata.append(ang)
 
-			if doang: # math seems wrong here, need to revisit
-				for n in range(0,k-2):  # internal angle; needs TRY EXCEPT
+			
+			# internal angle
+			# math seems wrong here, need to revisit
+			# yet same routine works fine with spiro
+			if doang:
+				for n in range(0,k-2):
 					point1=xdata[n],ydata[n];point2=xdata[n+1],ydata[n+1];point3=xdata[n+2],ydata[n+2]
 					lineA=([point1[0],point1[1]]),([point2[0],point2[1]]);lineB=point2,point3
 					vA=([(lineA[0][0]-lineA[1][0]),(lineA[0][1]-lineA[1][1])])
@@ -136,12 +146,10 @@ class Mandel(object):
 				currxlabel=ax.get_xlabel();currylabel=ax.get_ylabel()
 				currxlim=ax.get_xlim();currylim=ax.get_ylim()
 				ax.clear();ax.patch.set_facecolor(currcolor)
-				ax.set_title(currtitle,loc='left',fontsize=8,color=mybritegrn)
+				ax.set_title(currtitle,loc='left',color=mybritegrn)
 				ax.grid(True);ax.patch.set_alpha(1.0)
-				ax.tick_params(axis='x',labelsize=6,labelcolor='#ffffff')
-				ax.tick_params(axis='y',labelsize=6,labelcolor='#ffffff')
-				ax.set_xlabel(currxlabel,fontsize=8,color=mybritegrn)
-				ax.set_ylabel(currylabel,fontsize=8,color=mybritegrn)
+				ax.set_xlabel(currxlabel,color=mybritegrn)
+				ax.set_ylabel(currylabel,color=mybritegrn)
 				#ax.set_xlim(currxlim);ax.set_ylim(currylim)
 
 		def refreshone(self,n):
@@ -150,12 +158,10 @@ class Mandel(object):
 			currxlabel=ax.get_xlabel();currylabel=ax.get_ylabel()
 			currxlim=ax.get_xlim();currylim=ax.get_ylim()
 			ax.clear();ax.patch.set_facecolor(currcolor)
-			ax.set_title(currtitle,loc='left',fontsize=8,color=mybritegrn)
+			ax.set_title(currtitle,loc='left',color=mybritegrn)
 			ax.grid(True);ax.patch.set_alpha(1.0)
-			ax.tick_params(axis='x',labelsize=6,labelcolor='#ffffff')
-			ax.tick_params(axis='y',labelsize=6,labelcolor='#ffffff')
-			ax.set_xlabel(currxlabel,fontsize=8,color=mybritegrn)
-			ax.set_ylabel(currylabel,fontsize=8,color=mybritegrn)
+			ax.set_xlabel(currxlabel,color=mybritegrn)
+			ax.set_ylabel(currylabel,color=mybritegrn)
 			ax.set_xlim(currxlim);ax.set_ylim(currylim)
 
 		fig = plt.figure()
@@ -181,8 +187,6 @@ class Mandel(object):
 			ax.grid(True)
 			ax.patch.set_facecolor(rgbback)
 			ax.patch.set_alpha(1.0)
-			ax.tick_params(axis='x',labelsize=6,labelcolor='#ffffff')
-			ax.tick_params(axis='y',labelsize=6,labelcolor='#ffffff')
 
 		win = plt.gcf().canvas.manager.window
 		fig.canvas.manager.window.wm_geometry('%dx%d%+d%+d' % (wid,ht,xpos,ypos))
@@ -199,12 +203,9 @@ class Mandel(object):
 			lumon=(255,20,200) # your standard fuscia
 			lumon=list(map(lambda x: x/256,lumon))
 
-			#randomize the fore color here
+			#randomize the end color here
 			resultt=self.getcolor()
 			lumon=resultt
-			#print(resultt)
-
-
 
 			# lumoff is the start color of the plot gradient
 			lumoff=(0,125,125) # your standard dark teal
@@ -284,8 +285,8 @@ class Mandel(object):
 
 			print('\tnumbins:',numbins)
 			print('\tnumgrads',numgrads)
-			print('\ttrimend:',trimend)
 			print('\tlag:',lag)
+			print('\ttrimend:',trimend)
 
 			"""
 			# horizontal params print
@@ -297,10 +298,10 @@ class Mandel(object):
 			print('\n')
 
 			# horizontal params print
-			myheader = ['boreme','minbored','numbins','numgrads','trimend','lag']
+			myheader = ['boreme','minbored','numbins','numgrads','lag','trimend']
 			for item in myheader: print('{: <22}'.format(item),end='')
 			print('\n')
-			mydata = [boreme,minbored,numbins,numgrads,trimend,lag]
+			mydata = [boreme,minbored,numbins,numgrads,lag,trimend]
 			for item in mydata: print('{: <22}'.format(item),end='')
 			print('\n')
 			"""
@@ -317,40 +318,40 @@ class Mandel(object):
 			lumend3=alumen[int(numgrads/2)]
 			lumend4=alumen[int(numgrads)-1]
 
-			ax0.set_title('x-y orbit plot  trimend='+str(trimend),loc='left',fontsize=8,color=mybritegrn)
-
-			ax1.set_title('first 1/10',loc='left',fontsize=8,color=mybritegrn)
-			ax1.plot(xdata[0:end1],ydata[0:end1],lw=linewid,color=lumend1)
-				
-			ax2.set_title('1/10 - 1/5',loc='left',fontsize=8,color=mybritegrn)
-			ax2.plot(xdata[end1:end2],ydata[end1:end2],lw=linewid,color=lumend2)
-			
-			ax3.set_title('1/5 - 1/2',loc='left',fontsize=8,color=mybritegrn)
-			ax3.plot(xdata[end2:end3],ydata[end2:end3],lw=linewid,color=lumend3)
-			
-			ax4.set_xlim(xmin-0.8*abs(xmin),xmax+0.8*abs(xmax))
-			ax4.set_ylim(ymin-0.8*abs(ymin),ymax+0.8*abs(ymax))
-			ax4.set_title('last 1/10  trimend=0',loc='left',fontsize=8,color=mybritegrn)
-			ax4.plot(xdata[end3:],ydata[end3:],lw=linewid,color=lumend4)
-
-			ax5.set_title('rad vs k',loc='left',fontsize=8,color=mybritegrn)
-			ax7.set_title('ang vs k',loc='left',fontsize=8,color=mybritegrn)
-
-			ax9.set_title('rad vs k last 1/10',loc='left',fontsize=8,color=mybritegrn)
-			ax9.plot(raddata[end4:],lw=linewid,color=myturq)
-
-			ax6.set_title('rad hist',loc='left',fontsize=8,color=mybritegrn)
-			ax6.set_xlabel('rad',fontsize=8,color=mybritegrn)
-			ax6.set_ylabel('# in bin',fontsize=8,color=mybritegrn)			
-
-			ax11.set_title('ang vs k last 1/10',loc='left',fontsize=8,color=mybritegrn)
-			ax11.plot(angdata[end4:],lw=linewid,color=myteal)
-			
-			ax8.set_title('ang hist',loc='left',fontsize=8,color=mybritegrn)
-			ax8.set_xlabel('ang',fontsize=8,color=mybritegrn)
-			ax8.set_ylabel('# in bin',fontsize=8,color=mybritegrn)			
-
+			ax0.set_title('x-y orbit plot  trimend='+str(trimend),loc='left',color=mybritegrn)
 			ax0.set_xlim(xmin,xmax);ax0.set_ylim(ymin,ymax)
+
+			ax1.set_title('first 1/10',loc='left',color=mybritegrn)
+			ax1.plot(xdata[0:end1],ydata[0:end1],color=lumend1)
+				
+			ax2.set_title('1/10 - 1/5',loc='left',color=mybritegrn)
+			ax2.plot(xdata[end1:end2],ydata[end1:end2],color=lumend2)
+			
+			ax3.set_title('1/5 - 1/2',loc='left',color=mybritegrn)
+			ax3.plot(xdata[end2:end3],ydata[end2:end3],color=lumend3)
+			
+			#ax4.set_xlim(xmin-0.8*abs(xmin),xmax+0.8*abs(xmax))
+			#ax4.set_ylim(ymin-0.8*abs(ymin),ymax+0.8*abs(ymax))
+			ax4.set_title('last 1/10  trimend=0',loc='left',color=mybritegrn)
+			ax4.plot(xdata[end3:],ydata[end3:],color=lumend4)
+
+			ax5.set_title('rad vs k',loc='left',color=mybritegrn)
+			ax7.set_title('ang vs k',loc='left',color=mybritegrn)
+
+			ax9.set_title('rad vs k last 1/10',loc='left',color=mybritegrn)
+			ax9.plot(raddata[end4:],color=lumend4)
+
+			ax6.set_title('rad hist',loc='left',color=mybritegrn)
+			ax6.set_xlabel('rad',color=mybritegrn)
+			ax6.set_ylabel('# in bin',color=mybritegrn)			
+
+			ax11.set_title('ang vs k last 1/10',loc='left',color=mybritegrn)
+			ax11.plot(angdata[end4:],color=lumend4)
+			
+			ax8.set_title('ang hist',loc='left',color=mybritegrn)
+			ax8.set_xlabel('ang',color=mybritegrn)
+			ax8.set_ylabel('# in bin',color=mybritegrn)			
+
 			ax5.set_xlim(0,kappa-trimend);ax5.set_ylim(radmin,radmax)
 			ax7.set_xlim(0,kappa-trimend);ax7.set_ylim(angmin,angmax)
 
@@ -373,10 +374,10 @@ class Mandel(object):
 			Y2 = 2*np.fft.fft(data)/n # fft computing and norm
 			Y1 = Y2[1:int(n/2)]
 
-			ax10.set_title('FT('+datalbl+') vs period   Fsamp=300',loc='left',fontsize=8,color=mybritegrn)
-			ax10.set_xlabel('period',fontsize=8,color=mybritegrn)
-			ax10.set_ylabel('FT('+datalbl+')',fontsize=8,color=mybritegrn)
-			ax10.plot(frq1[1:maxfreq],abs(Y1[1:maxfreq]),lw=linewid,color=myorange)
+			ax10.set_title('FT('+datalbl+') vs period   Fsamp=300',loc='left',color=mybritegrn)
+			ax10.set_xlabel('period',color=mybritegrn)
+			ax10.set_ylabel('FT('+datalbl+')',color=mybritegrn)
+			ax10.plot(frq1[1:maxfreq],abs(Y1[1:maxfreq]),color=myorange)
 
 			data=angdata
 			datalbl='ang'
@@ -392,16 +393,16 @@ class Mandel(object):
 			Y2 = 2*np.fft.fft(data)/n # fft computing and norm
 			Y1 = Y2[1:int(n/2)]
 
-			ax12.set_title('FT('+datalbl+') vs period   Fsamp=300',loc='left',fontsize=8,color=mybritegrn)
-			ax12.set_xlabel('period',fontsize=8,color=mybritegrn)
-			ax12.set_ylabel('FT('+datalbl+')',fontsize=8,color=mybritegrn)
-			ax12.plot(frq1[1:maxfreq],abs(Y1[1:maxfreq]),lw=linewid,color=myorange2)
+			ax12.set_title('FT('+datalbl+') vs period   Fsamp=300',loc='left',color=mybritegrn)
+			ax12.set_xlabel('period',color=mybritegrn)
+			ax12.set_ylabel('FT('+datalbl+')',color=mybritegrn)
+			ax12.plot(frq1[1:maxfreq],abs(Y1[1:maxfreq]),color=myorange2)
 			#___________________________________________________________________#
 
 			if not doani:
-				ax0.plot(xdata[0:kappa-trimend],ydata[0:kappa-trimend],lw=linewid,color=myteal)
-				ax5.plot(raddata[0:kappa-trimend],lw=linewid,color=myturq)
-				ax7.plot(angdata[0:kappa-trimend],lw=linewid,color=myteal)
+				ax0.plot(xdata[0:kappa-trimend],ydata[0:kappa-trimend],color=lumend4)
+				ax5.plot(raddata[0:kappa-trimend],color=myorange)
+				ax7.plot(angdata[0:kappa-trimend],color=myorange2)
 				plt.show(block=False);fig.canvas.draw()
 
 			else:
@@ -420,54 +421,52 @@ class Mandel(object):
 				ax5.set_xlim(0,kappa-trimend);ax5.set_ylim(radmin,radmax)
 				ax7.set_xlim(0,kappa-trimend);ax7.set_ylim(angmin,angmax)
 
-				n=0
-				#print('\nFIRST SLICE') # handle first slice manually
-				#print('n,n*lag,(n+1)*lag,xdata[n*lag:(n+1)*lag]')
-				#print(n,n*lag,(n+1)*lag,xdata[n*lag:(n+1)*lag])
-				ax0.plot(xdata[n*lag:(n+1)*lag],ydata[n*lag:(n+1)*lag],lw=linewid,color=alumen[n])
+				try:
+					n=0
+					#print('\nFIRST SLICE') # handle first slice manually
+					#print('n,n*lag,(n+1)*lag,xdata[n*lag:(n+1)*lag]')
+					#print(n,n*lag,(n+1)*lag,xdata[n*lag:(n+1)*lag])
 
-				#ax5.plot(raddata[n*lag:(n+1)*lag],lw=linewid,color=alumen[n])
-				xx=np.arange(n*lag,(n+1)*lag)
-				yy=np.array(raddata[n*lag:(n+1)*lag])
-				if len(xx)!=len(yy): xx.pop() # delete last item in list if they don't match
-				ax5.plot(xx,yy,lw=linewid,color=alumen[n])
+					ax0.plot(xdata[n*lag:(n+1)*lag],ydata[n*lag:(n+1)*lag],color=alumen[n])
 
-				#ax7.plot(angdata[n*lag:(n+1)*lag],lw=linewid,color=alumen[n])
-				xx=np.arange(n*lag,(n+1)*lag)
-				yy=np.array(angdata[n*lag:(n+1)*lag])
-				if len(xx)!=len(yy): xx.pop() 
-				ax7.plot(xx,yy,lw=linewid,color=alumen[n])
+					#ax5.plot(raddata[n*lag:(n+1)*lag],color=alumen[n])
+					xx=np.arange(n*lag,(n+1)*lag)
+					yy=np.array(raddata[n*lag:(n+1)*lag])
+					ax5.plot(xx,yy,color=alumen[n])
 
-				# histograms
-				#refreshone(self,10);refreshone(self,12)
-				refreshone(self,6);refreshone(self,8)
-				ax6.set_xlim(0,radmax);ax8.set_xlim(0,angmax)
-				ax6.hist(raddata[0:(n+1)*lag],bins=numbins,normed=True,color=alumen[n])
-				ax8.hist(angdata[0:(n+1)*lag],bins=numbins,normed=True,color=alumen[n])
+					#ax7.plot(angdata[n*lag:(n+1)*lag],color=alumen[n])
+					xx=np.arange(n*lag,(n+1)*lag)
+					yy=np.array(angdata[n*lag:(n+1)*lag])
+					ax7.plot(xx,yy,color=alumen[n])
 
-				plt.show(block=False);fig.canvas.draw()
-				time.sleep(linesleep)
+					# histograms
+					#refreshone(self,10);refreshone(self,12)
+					refreshone(self,6);refreshone(self,8)
+					ax6.set_xlim(0,radmax);ax8.set_xlim(0,angmax)
+					ax6.hist(raddata[0:(n+1)*lag],bins=numbins,normed=True,color=alumen[n])
+					ax8.hist(angdata[0:(n+1)*lag],bins=numbins,normed=True,color=alumen[n])
 
-				#for n in range(1,numgrads):
-				while (n+1)*lag<kappa-lag:
+					plt.show(block=False);fig.canvas.draw()
+					time.sleep(linesleep)
+				except:
+					pass
 
+					#for n in range(1,numgrads):
+					while (n+1)*lag<kappa-lag:
 					try:
 						n+=1
 						#print('n,n*lag-1,(n+1)*lag,xdata[n*lag-1:(n+1)*lag]')
 						#print(n,n*lag-1,(n+1)*lag,xdata[n*lag-1:(n+1)*lag])
 
-						ax0.plot(xdata[n*lag-1:(n+1)*lag],ydata[n*lag-1:(n+1)*lag],lw=linewid,color=alumen[n])
+						ax0.plot(xdata[n*lag-1:(n+1)*lag],ydata[n*lag-1:(n+1)*lag],color=alumen[n])
 						
 						yy=np.array(raddata[n*lag:(n+1)*lag])
 						xx=np.arange(n*lag,n*lag+len(yy))
-
-						if len(xx)!=len(yy): xx.pop()
-						ax5.plot(xx,yy,lw=linewid,color=alumen[n])
+						ax5.plot(xx,yy,color=alumen[n])
 
 						yy=np.array(angdata[n*lag-1:(n+1)*lag])
 						xx=np.arange(n*lag,n*lag+len(yy))
-						if len(xx)!=len(yy): xx.pop()
-						ax7.plot(xx,yy,lw=linewid,color=alumen[n])
+						ax7.plot(xx,yy,color=alumen[n])
 
 						# histograms
 						#refreshone(self,10);refreshone(self,12)
@@ -478,14 +477,7 @@ class Mandel(object):
 
 						plt.show(block=False);fig.canvas.draw()
 						time.sleep(linesleep)
-
 					except:
-						# on the last slice, which will prob not be a full slice,
-						# the lists/arrays xx and yy are sometimes not the same length causing an exception
-						# so we should prob treat the last slice separately and carefully
-						print('EXCEPTION caught; SEGMENT NOT PLOTTED; post-correction values:')
-						print('n,p,q',n,p,q)
-						print('lenxx,lenyy',len(xx),len(yy))
 						continue
 
 				n=numgrads-1
@@ -529,13 +521,13 @@ class Mandel(object):
 			plt.show(block=True)
 #___________________________________________________________________#
 
-doani=True 		# animate the orbit, rad, and ang plots
+doani=False 		# animate the orbit, rad, and ang plots
 doloop=True		# loop thru random orbits, not just one
 dosave=True 	# save params to DB or file, and save png
 doang=False 	# external angle, not implemented yet
 angerror='none'
 
-dodata=False
+dodata=True
 chunk=40
 chunksleep=0
 
@@ -547,9 +539,7 @@ maxrad=2.0		# defines the escape criterion
 
 trimend=4		# omits the final few iterations from some of the plots
 numbins=120		# no. of bins in the histograms
-
 numgrads=14		# how many slices to plot the animated orbit
-linewid=.4		# line width
 
 figclose=False 	# close after plotting
 figsleep=0		# various sleep intervals
@@ -558,8 +548,8 @@ linesleep=0
 
 wid=1000;ht=700;xpos=10;ypos=100	# window size & posn
 wid=1200;ht=650;xpos=2100;ypos=100
-wid=1800;ht=1100;xpos=30;ypos=30
 wid=2100;ht=1400;xpos=30;ypos=30
+wid=1800;ht=1100;xpos=30;ypos=30
 
 mygunmet='#113344';myblue='#11aacc';mydkblue='#0000cc'
 myturq='#00ffff';myturq2='#11bbbb';myteal='#00ffcc';myteal2='#00ccaa'
@@ -693,13 +683,13 @@ cx=-0.669024875506;cy=-0.350659130696
 
 
 # SCATTER PLOT (MANDELBROT MAP)
-#ax1.set_title('xmap-ymap',fontsize=8,color=mybritegrn)
-#ax1.scatter(xnice,ynice,s=1,lw=linewid,color=myorange)
+#ax1.set_title('xmap-ymap',color=mybritegrn)
+#ax1.scatter(xnice,ynice,s=1,color=myorange)
 
 # INTERNAL ANGLE
 # if doang...
-#ax1111.set_title('ang2int-k',fontsize=8,color=mybritegrn)
-#ax1111.plot(ang2data,lw=linewid,color=myturq)
+#ax1111.set_title('ang2int-k',color=mybritegrn)
+#ax1111.plot(ang2data,color=myturq)
 
 
 # other functions
@@ -724,4 +714,7 @@ while k<maxiterrs and x**2+y**2<maxrad:
 	xdata.append(x);ydata.append(y)
 self.mandfunc='moth3'
 
+				if len(xx)!=len(yy):
+					xx.pop()
+					print('NOT EQUAL')
 """
