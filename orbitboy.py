@@ -451,8 +451,8 @@ class Mandel(object):
 				except:
 					pass
 
-					#for n in range(1,numgrads):
-					while (n+1)*lag<kappa-lag:
+				#for n in range(1,numgrads):
+				while (n+1)*lag<kappa-lag:
 					try:
 						n+=1
 						#print('n,n*lag-1,(n+1)*lag,xdata[n*lag-1:(n+1)*lag]')
@@ -521,25 +521,25 @@ class Mandel(object):
 			plt.show(block=True)
 #___________________________________________________________________#
 
-doani=False 		# animate the orbit, rad, and ang plots
+doani=True 		# animate the orbit, rad, and ang plots
 doloop=True		# loop thru random orbits, not just one
 dosave=True 	# save params to DB or file, and save png
 doang=False 	# external angle, not implemented yet
 angerror='none'
 
-dodata=True
+dodata=False
 chunk=40
 chunksleep=0
 
 maxiters=24000	# max iterations
-minbored=2000	# minimum non-boring orbit iterations
+minbored=2400	# minimum non-boring orbit iterations
 
 boreme=False 	#  False to pick a long orbit which escapes at the end
 maxrad=2.0		# defines the escape criterion
 
 trimend=4		# omits the final few iterations from some of the plots
 numbins=120		# no. of bins in the histograms
-numgrads=14		# how many slices to plot the animated orbit
+numgrads=7		# how many slices to plot the animated orbit
 
 figclose=False 	# close after plotting
 figsleep=0		# various sleep intervals
