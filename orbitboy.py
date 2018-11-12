@@ -34,8 +34,8 @@ class Mandel(object):
 			g=np.random.uniform(0.0,0.2)
 			b=np.random.uniform(0.4,0.8)
 			# not too dark
-			if r>0.6 or b>0.6: break
-		print('rgb: ',r,g,b)
+			if r>0.7 or b>0.7: break
+		print('rgbfore: ',int(r*256),int(g*256),int(b*256))
 		return (r,g,b)
 
 	def lumengen(self,fore,back,grads): # get colors between start (back) and end (fore) colors
@@ -208,7 +208,8 @@ class Mandel(object):
 			lumon=resultt
 
 			# lumoff is the start color of the plot gradient
-			lumoff=(0,125,125) # your standard dark teal
+			lumoff=(0,225,125)
+
 			lumoff=list(map(lambda x: x/256,lumoff))
 			lumen=self.lumengen(lumon,lumoff,numgrads)
 			alumen=lumen[::-1]
@@ -339,14 +340,14 @@ class Mandel(object):
 			ax7.set_title('ang vs k',loc='left',color=mybritegrn)
 
 			ax9.set_title('rad vs k last 1/10',loc='left',color=mybritegrn)
-			ax9.plot(raddata[end4:],color=lumend4)
+			ax9.plot(raddata[end4:],color=myorange)
 
 			ax6.set_title('rad hist',loc='left',color=mybritegrn)
 			ax6.set_xlabel('rad',color=mybritegrn)
 			ax6.set_ylabel('# in bin',color=mybritegrn)			
 
 			ax11.set_title('ang vs k last 1/10',loc='left',color=mybritegrn)
-			ax11.plot(angdata[end4:],color=lumend4)
+			ax11.plot(angdata[end4:],color=myorange2)
 			
 			ax8.set_title('ang hist',loc='left',color=mybritegrn)
 			ax8.set_xlabel('ang',color=mybritegrn)
@@ -491,7 +492,7 @@ class Mandel(object):
 				try:
 					cnx = mysql.connector.connect(user='root', password='YOURMYSQLPASSWORD', host='127.0.0.1', database='mandel')
 					cursor = cnx.cursor()
-					add_orbit = 'INSERT INTO orbit (p,q,kappa,maxrad,radavg,raddev,angavg,angdev) ' + 'VALUES ('+str(p)+','+str(q)+','+str(kappa)+','+str(maxrad)+','+str(radavg)+','+str(raddev)+','+str(angavg)+','+str(angdev)+')'
+					add_orbit = 'INSERT INTO orbit (p,q,kappa,maxrad,radavg,raddev,angavg,angdev) VALUES('+str(p)+','+str(q)+','+str(kappa)+','+str(maxrad)+','+str(radavg)+','+str(raddev)+','+str(angavg)+','+str(angdev)+')'
 					cursor.execute(add_orbit)
 					cnx.commit()
 					cursor.close()
@@ -531,15 +532,15 @@ dodata=False
 chunk=40
 chunksleep=0
 
-maxiters=24000	# max iterations
-minbored=2400	# minimum non-boring orbit iterations
+maxiters=32000	# max iterations
+minbored=4400	# minimum non-boring orbit iterations
 
 boreme=False 	#  False to pick a long orbit which escapes at the end
 maxrad=2.0		# defines the escape criterion
 
 trimend=4		# omits the final few iterations from some of the plots
 numbins=120		# no. of bins in the histograms
-numgrads=7		# how many slices to plot the animated orbit
+numgrads=10		# how many slices to plot the animated orbit
 
 figclose=False 	# close after plotting
 figsleep=0		# various sleep intervals
