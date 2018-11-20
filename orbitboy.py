@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-# or /usr/bin/env python3
 #
 # orbitboy.py
 # ted nason 2018
@@ -17,8 +16,39 @@ import mysql.connector
 #___________________________________________________________________#
 
 class Mandel(object):
-	def __init__(self,boreme,minbored,xpos,ypos,wid,ht,figsleep,finalsleep):
-		pass # to make it a real class, need to redo vars as self.vars, so for now it's just a script
+	def __init__(self,doani,doloop,dosave,doang,angerror,dodata,chunk,chunksleep,maxiters,minbored,boreme,maxrad,trimend,numbins,numgrads,figclose,figsleep,finalsleep,linesleep,wid,ht,xpos,ypos):
+		self.doani=doani
+		self.doloop=doloop
+
+		self.dosave=dosave
+		self.doang=doang
+
+		self.angerror=angerror
+		self.dodata=dodata
+
+		self.chunk=chunk
+		self.chunksleep=chunksleep
+
+		self.maxiters=maxiters
+		self.minbored=minbored
+
+		self.boreme=boreme
+		self.maxrad=maxrad
+
+		self.trimend=trimend
+		self.numbins=numbins
+
+		self.numgrads=numgrads
+		self.figclose=figclose
+
+		self.figsleep=figsleep
+		self.finalsleep=finalsleep
+		self.linesleep=linesleep
+
+		self.wid=wid
+		self.ht=ht
+		self.xpos=xpos
+		self.ypos=ypos
 
 	# https://matplotlib.org/users/customizing.html
 	mpl.rcParams['font.size']=8
@@ -34,7 +64,7 @@ class Mandel(object):
 			g=np.random.uniform(0.0,0.2)
 			b=np.random.uniform(0.4,0.8)
 			# not too dark
-			if r>0.7 or b>0.7: break
+			if r>0.6 or b>0.6: break
 		print('rgbfore: ',int(r*256),int(g*256),int(b*256))
 		return (r,g,b)
 
@@ -42,7 +72,7 @@ class Mandel(object):
 		rangeRGB=[x1-x2 for (x1,x2) in zip(fore,back)] # the range of RGB[0-1] to be covered
 		segRGB=list(map(lambda x: x/grads,rangeRGB)) # the amount to decrement each element RGB
 		R=np.zeros((grads,));G=np.zeros((grads,));B=np.zeros((grads,)) # start w/fore and decrement to back
-		for nn in range(numgrads): R[nn]=fore[0]-nn*segRGB[0];G[nn]=fore[1]-nn*segRGB[1];B[nn]=fore[2]-nn*segRGB[2]
+		for nn in range(self.numgrads): R[nn]=fore[0]-nn*segRGB[0];G[nn]=fore[1]-nn*segRGB[1];B[nn]=fore[2]-nn*segRGB[2]
 		return list(zip(R,G,B))
 
 	def datagen(self,maxiterrs):
@@ -74,17 +104,17 @@ class Mandel(object):
 			self.mandfunc='z*z+c'
 
 			k=0;c=complex(cx,cy);z=complex(0.0,0.0)
-			while abs(z)<maxrad and k<maxiterrs:
+			while abs(z)<self.maxrad and k<maxiterrs:
 				k+=1;z=z*z+c
 				xdata.append(z.real);ydata.append(z.imag)
 			
-			if boreme:
-				if k>=minbored: # it's boring but over the minbored, so stop looking
+			if self.boreme:
+				if k>=self.minbored: # it's boring but over the minbored, so stop looking
 					print('BORING #',boredcount,'kappa=',k,'\tcx=',cx,'\tcy=',cy)
 					break # go on to calculate stats and return
 				else: continue # it's less then minbored so keep looking
 			else:
-				if k>minbored and k<maxiterrs: # we found a non-boring one
+				if k>self.minbored and k<maxiterrs: # we found a non-boring one
 					break # go on to calculate stats and return
 				else: continue # keep looking
 
@@ -95,7 +125,7 @@ class Mandel(object):
 			# external angle
 			angerror='none'	
 			if abs(xdata[n])<1e-8:
-				ang=90 # this is not a critical error, just cannot take arctan of 0, so no break
+				ang=90 # no arctan of 0, so just fix it and don't break
 				angerror='ext_angle arctan(0) set ang=90'
 				print('QUASI-EXCEPTION angerror: ', angerror)
 			else:
@@ -106,7 +136,7 @@ class Mandel(object):
 			# internal angle
 			# math seems wrong here, need to revisit
 			# yet same routine works fine with spiro
-			if doang:
+			if self.doang:
 				for n in range(0,k-2):
 					point1=xdata[n],ydata[n];point2=xdata[n+1],ydata[n+1];point3=xdata[n+2],ydata[n+2]
 					lineA=([point1[0],point1[1]]),([point2[0],point2[1]]);lineB=point2,point3
@@ -115,15 +145,15 @@ class Mandel(object):
 					dot_prod=dot(vA,vB);magA=dot(vA,vA)**0.5;magB=dot(vB,vB)**0.5
 
 					if abs(magA)<1e-8:
-						angerror='magA=0'
-						print('EXCEPTION angerror: ', angerror); break
+						self.angerror='magA=0'
+						print('EXCEPTION angerror: ', self.angerror); break
 					if abs(magB)<1e-8:
-						angerror='magB=0'
-						print('EXCEPTION angerror: ', angerror); break
+						self.angerror='magB=0'
+						print('EXCEPTION angerror: ', self.angerror); break
 					argg=dot_prod/magB/magA
 					if abs(argg)>1:
-						angerror='arccos(arg>1)'
-						print('EXCEPTION angerror: ', angerror); break
+						self.angerror='arccos(arg>1)'
+						print('EXCEPTION angerror: ', self.angerror); break
 
 					ang=math.acos(argg)
 					ang_deg=180-math.degrees(ang)%360
@@ -131,9 +161,9 @@ class Mandel(object):
 
 				ang2data.pop(0)
 
-		params=[k,cx,cy,angerror]
-		xmin=min(xdata[:k-trimend]);xmax=max(xdata[:k-trimend]);xavg=mean(xdata);xdev=std(xdata);xstats=[xmin,xmax,xavg,xdev]
-		ymin=min(ydata[:k-trimend]);ymax=max(ydata[:k-trimend]);yavg=mean(ydata);ydev=std(ydata);ystats=[ymin,ymax,yavg,ydev]
+		params=[k,cx,cy,self.angerror]
+		xmin=min(xdata[:k-self.trimend]);xmax=max(xdata[:k-self.trimend]);xavg=mean(xdata);xdev=std(xdata);xstats=[xmin,xmax,xavg,xdev]
+		ymin=min(ydata[:k-self.trimend]);ymax=max(ydata[:k-self.trimend]);yavg=mean(ydata);ydev=std(ydata);ystats=[ymin,ymax,yavg,ydev]
 		radmin=min(raddata);radmax=max(raddata);radavg=mean(raddata);raddev=std(raddata);radstats=[radmin,radmax,radavg,raddev]
 		angmin=min(angdata);angmax=max(angdata);angavg=mean(angdata);angdev=std(angdata);angstats=[angmin,angmax,angavg,angdev]
 		return params,xstats,ystats,radstats,angstats,xdata,ydata,raddata,angdata,boredcount,ang2data
@@ -189,7 +219,7 @@ class Mandel(object):
 			ax.patch.set_alpha(1.0)
 
 		win = plt.gcf().canvas.manager.window
-		fig.canvas.manager.window.wm_geometry('%dx%d%+d%+d' % (wid,ht,xpos,ypos))
+		fig.canvas.manager.window.wm_geometry('%dx%d%+d%+d' % (self.wid,self.ht,self.xpos,self.ypos))
 		fig.patch.set_facecolor(rgbback)
 		plt.tight_layout(pad=0.1,w_pad=0.1,h_pad=0.5)
 		fig.subplots_adjust(top=0.935)
@@ -211,19 +241,19 @@ class Mandel(object):
 			lumoff=(0,225,125)
 
 			lumoff=list(map(lambda x: x/256,lumoff))
-			lumen=self.lumengen(lumon,lumoff,numgrads)
+			lumen=self.lumengen(lumon,lumoff,self.numgrads)
 			alumen=lumen[::-1]
 
 			# get the data for an orbit
-			result=self.datagen(maxiters)
+			result=self.datagen(self.maxiters)
 
 			# set names for result of datagen here
 			params=result[0]
 			kappa=params[0];p=params[1];q=params[2];boredcount=result[9];angerr=params[3]
 
 			# if numgrads>kappa, you are trying to plot more slices than there are data points so set lag=1
-			if kappa>numgrads:
-				lag=int(kappa/numgrads)
+			if kappa>self.numgrads:
+				lag=int(kappa/self.numgrads)
 			else:
 				lag=1
 
@@ -237,7 +267,7 @@ class Mandel(object):
 			#___________________________________________________________________#
 
 			# print some stuff
-			if dodata: # full orbit stats print
+			if self.dodata: # full orbit stats print
 				###################### PRINT HEADER ######################
 				print('\n')
 				myheader = ['kappa','n','xdata[n]','ydata[n]']
@@ -247,7 +277,7 @@ class Mandel(object):
 
 				###################### PRINT DATA IN CHUNKS ######################
 				start=0
-				end=chunk
+				end=self.chunk
 				while end<=kappa:
 					for item in myheader: print('{: <22}'.format(item),end='')
 					print('\n',end='')
@@ -257,15 +287,15 @@ class Mandel(object):
 						mydata = [kappa,n,xdata[n],ydata[n]]
 						for item in mydata: print('{: <22}'.format(item),end='')
 						print('\n',end='')
-						time.sleep(linesleep)
+						time.sleep(self.linesleep)
 
 					if end==kappa:break
-					time.sleep(chunksleep)
-					start+=chunk
-					end+=chunk
+					time.sleep(self.chunksleep)
+					start+=self.chunk
+					end+=self.chunk
 					if end>kappa: end=kappa
 					print('+'*100)
-				time.sleep(chunksleep)
+				time.sleep(self.chunksleep)
 
 			print('\nSELECTED non-boring p,q after',str(boredcount),'tries:')
 
@@ -274,9 +304,9 @@ class Mandel(object):
 			print('\tp='+str(p))
 			print('\tq='+str(q))
 
-			print('\tboreme:',boreme)
-			print('\tminbored:',minbored)
-			print('\tmaxiters',maxiters)
+			print('\tboreme:',self.boreme)
+			print('\tminbored:',self.minbored)
+			print('\tmaxiters',self.maxiters)
 
 			print('\tradavg:',radavg)
 			print('\traddev:',raddev)
@@ -284,17 +314,17 @@ class Mandel(object):
 			print('\tangdev:',angdev)
 			print('\tangerr:',angerr)
 
-			print('\tnumbins:',numbins)
-			print('\tnumgrads',numgrads)
+			print('\tnumbins:',self.numbins)
+			print('\tnumgrads',self.numgrads)
 			print('\tlag:',lag)
-			print('\ttrimend:',trimend)
+			print('\ttrimend:',self.trimend)
 
 			"""
 			# horizontal params print
 			myheader = ['kappa','p','q','maxrad','maxiters','radavg','raddev','angavg','angdev','angerror']
 			for item in myheader: print('{: <22}'.format(item),end='')
 			print('\n')
-			mydata = [kappa,p,q,maxrad,maxiters,radavg,raddev,angavg,angdev,angerror]
+			mydata = [kappa,p,q,self.maxrad,self.maxiters,radavg,raddev,angavg,angdev,self.angerror]
 			for item in mydata: print('{: <22}'.format(item),end='')
 			print('\n')
 
@@ -302,33 +332,33 @@ class Mandel(object):
 			myheader = ['boreme','minbored','numbins','numgrads','lag','trimend']
 			for item in myheader: print('{: <22}'.format(item),end='')
 			print('\n')
-			mydata = [boreme,minbored,numbins,numgrads,lag,trimend]
+			mydata = [self.boreme,self.minbored,self.numbins,self.numgrads,lag,self.trimend]
 			for item in mydata: print('{: <22}'.format(item),end='')
 			print('\n')
 			"""
 			#___________________________________________________________________#
 
 			# plot some stuff
-			mytitle='Mandelbrot ' +self.mandfunc+ '  p= '+str(p)+'  q= '+str(q)+'  kappa= '+str(kappa)+'  maxrad= '+str(maxrad)
+			mytitle='Mandelbrot ' +self.mandfunc+ '  p= '+str(p)+'  q= '+str(q)+'  kappa= '+str(kappa)+'  maxrad= '+str(self.maxrad)
 			fig.suptitle(mytitle,fontsize=9,color='#00ff00')
 			refreshall(self)
 			
-			end1=int(kappa/10);end2=int(kappa/5);end3=int(kappa/2);end4=int(0.9*kappa)
-			lumend1=alumen[int(numgrads/10)]
-			lumend2=alumen[int(numgrads/5)]
-			lumend3=alumen[int(numgrads/2)]
-			lumend4=alumen[int(numgrads)-1]
+			end1=int(kappa/10);end2=int(kappa/2);end3=int(kappa*0.9)
+			lumend1=alumen[int(self.numgrads/10)]
+			lumend2=alumen[int(self.numgrads/2)]
+			lumend3=alumen[int(self.numgrads*0.9)]
+			lumend4=alumen[int(self.numgrads)-1]
 
-			ax0.set_title('x-y orbit plot  trimend='+str(trimend),loc='left',color=mybritegrn)
+			ax0.set_title('x-y orbit plot  trimend='+str(self.trimend),loc='left',color=mybritegrn)
 			ax0.set_xlim(xmin,xmax);ax0.set_ylim(ymin,ymax)
 
 			ax1.set_title('first 1/10',loc='left',color=mybritegrn)
 			ax1.plot(xdata[0:end1],ydata[0:end1],color=lumend1)
 				
-			ax2.set_title('1/10 - 1/5',loc='left',color=mybritegrn)
+			ax2.set_title('1/10 - 1/2',loc='left',color=mybritegrn)
 			ax2.plot(xdata[end1:end2],ydata[end1:end2],color=lumend2)
 			
-			ax3.set_title('1/5 - 1/2',loc='left',color=mybritegrn)
+			ax3.set_title('1/2 - 90%',loc='left',color=mybritegrn)
 			ax3.plot(xdata[end2:end3],ydata[end2:end3],color=lumend3)
 			
 			#ax4.set_xlim(xmin-0.8*abs(xmin),xmax+0.8*abs(xmax))
@@ -340,24 +370,24 @@ class Mandel(object):
 			ax7.set_title('ang vs k',loc='left',color=mybritegrn)
 
 			ax9.set_title('rad vs k last 1/10',loc='left',color=mybritegrn)
-			ax9.plot(raddata[end4:],color=myorange)
+			ax9.plot(raddata[end3:],color=myorange)
 
 			ax6.set_title('rad hist',loc='left',color=mybritegrn)
 			ax6.set_xlabel('rad',color=mybritegrn)
 			ax6.set_ylabel('# in bin',color=mybritegrn)			
 
 			ax11.set_title('ang vs k last 1/10',loc='left',color=mybritegrn)
-			ax11.plot(angdata[end4:],color=myorange2)
+			ax11.plot(angdata[end3:],color=myorange2)
 			
 			ax8.set_title('ang hist',loc='left',color=mybritegrn)
 			ax8.set_xlabel('ang',color=mybritegrn)
 			ax8.set_ylabel('# in bin',color=mybritegrn)			
 
-			ax5.set_xlim(0,kappa-trimend);ax5.set_ylim(radmin,radmax)
-			ax7.set_xlim(0,kappa-trimend);ax7.set_ylim(angmin,angmax)
+			ax5.set_xlim(0,kappa-self.trimend);ax5.set_ylim(radmin,radmax)
+			ax7.set_xlim(0,kappa-self.trimend);ax7.set_ylim(angmin,angmax)
 
-			ax6.hist(raddata[0:kappa-trimend],bins=numbins,normed=True,color=myyell)
-			ax8.hist(angdata[0:kappa-trimend],bins=numbins,normed=True,color=myyell2)
+			ax6.hist(raddata[0:kappa-self.trimend],bins=self.numbins,normed=True,color=myyell)
+			ax8.hist(angdata[0:kappa-self.trimend],bins=self.numbins,normed=True,color=myyell2)
 			#___________________________________________________________________#
 
 			# do some fourier stuff
@@ -400,10 +430,10 @@ class Mandel(object):
 			ax12.plot(frq1[1:maxfreq],abs(Y1[1:maxfreq]),color=myorange2)
 			#___________________________________________________________________#
 
-			if not doani:
-				ax0.plot(xdata[0:kappa-trimend],ydata[0:kappa-trimend],color=lumend4)
-				ax5.plot(raddata[0:kappa-trimend],color=myorange)
-				ax7.plot(angdata[0:kappa-trimend],color=myorange2)
+			if not self.doani:
+				ax0.plot(xdata[0:kappa-self.trimend],ydata[0:kappa-self.trimend],color=lumend4)
+				ax5.plot(raddata[0:kappa-self.trimend],color=myorange)
+				ax7.plot(angdata[0:kappa-self.trimend],color=myorange2)
 				plt.show(block=False);fig.canvas.draw()
 
 			else:
@@ -414,13 +444,13 @@ class Mandel(object):
 				# But for the first slice this results in the slice [-1:0] which means it tries to start at the last element "thru" the first
 				# so the first slice is plotted manually before the loop.
 				#
-				# At the last slice, lag=int(kappa/numgrads) may not divide evenly into kappa
+				# At the last slice, lag=int(kappa/self.numgrads) may not divide evenly into kappa
 				# so there will typically be a few points at the end not covered by the loop;
 				# these are handled manually after the loop.
 
 				refreshone(self,5);refreshone(self,7)
-				ax5.set_xlim(0,kappa-trimend);ax5.set_ylim(radmin,radmax)
-				ax7.set_xlim(0,kappa-trimend);ax7.set_ylim(angmin,angmax)
+				ax5.set_xlim(0,kappa-self.trimend);ax5.set_ylim(radmin,radmax)
+				ax7.set_xlim(0,kappa-self.trimend);ax7.set_ylim(angmin,angmax)
 
 				try:
 					n=0
@@ -444,15 +474,15 @@ class Mandel(object):
 					#refreshone(self,10);refreshone(self,12)
 					refreshone(self,6);refreshone(self,8)
 					ax6.set_xlim(0,radmax);ax8.set_xlim(0,angmax)
-					ax6.hist(raddata[0:(n+1)*lag],bins=numbins,normed=True,color=alumen[n])
-					ax8.hist(angdata[0:(n+1)*lag],bins=numbins,normed=True,color=alumen[n])
+					ax6.hist(raddata[0:(n+1)*lag],bins=self.numbins,normed=True,color=alumen[n])
+					ax8.hist(angdata[0:(n+1)*lag],bins=self.numbins,normed=True,color=alumen[n])
 
 					plt.show(block=False);fig.canvas.draw()
-					time.sleep(linesleep)
+					time.sleep(self.linesleep)
 				except:
 					pass
 
-				#for n in range(1,numgrads):
+				#for n in range(1,self.numgrads):
 				while (n+1)*lag<kappa-lag:
 					try:
 						n+=1
@@ -473,26 +503,26 @@ class Mandel(object):
 						#refreshone(self,10);refreshone(self,12)
 						refreshone(self,6);refreshone(self,8)
 						ax6.set_xlim(0,radmax);ax8.set_xlim(0,angmax)
-						ax6.hist(raddata[0:(n+1)*lag],bins=numbins,normed=True,color=alumen[n])
-						ax8.hist(angdata[0:(n+1)*lag],bins=numbins,normed=True,color=alumen[n])
+						ax6.hist(raddata[0:(n+1)*lag],bins=self.numbins,normed=True,color=alumen[n])
+						ax8.hist(angdata[0:(n+1)*lag],bins=self.numbins,normed=True,color=alumen[n])
 
 						plt.show(block=False);fig.canvas.draw()
-						time.sleep(linesleep)
+						time.sleep(self.linesleep)
 					except:
 						continue
 
-				n=numgrads-1
+				n=self.numgrads-1
 
 
 			nice.append(params);xnice.append(params[1]);ynice.append(params[2])
 			intfile=str(kappa)+'_'+str(p)+'_'+str(q)+'.txt'
 
-			if dosave: 
+			if self.dosave: 
 				# save to DB if it exists
 				try:
 					cnx = mysql.connector.connect(user='root', password='YOURMYSQLPASSWORD', host='127.0.0.1', database='mandel')
 					cursor = cnx.cursor()
-					add_orbit = 'INSERT INTO orbit (p,q,kappa,maxrad,radavg,raddev,angavg,angdev) VALUES('+str(p)+','+str(q)+','+str(kappa)+','+str(maxrad)+','+str(radavg)+','+str(raddev)+','+str(angavg)+','+str(angdev)+')'
+					add_orbit = 'INSERT INTO orbit (p,q,kappa,maxrad,radavg,raddev,angavg,angdev) VALUES('+str(p)+','+str(q)+','+str(kappa)+','+str(self.maxrad)+','+str(radavg)+','+str(raddev)+','+str(angavg)+','+str(angdev)+')'
 					cursor.execute(add_orbit)
 					cnx.commit()
 					cursor.close()
@@ -512,14 +542,25 @@ class Mandel(object):
 
 			time.time();elapsed=time.time()-start_time
 			timerpt='\telapsed: '+str(elapsed);print(timerpt)
-			time.sleep(figsleep)
-			if not doloop: break
+			time.sleep(self.figsleep)
+			if not self.doloop: break
 
-		if figclose:
-			time.sleep(finalsleep)
+		if self.figclose:
+			time.sleep(self.finalsleep)
 			plt.close()
 		else:
 			plt.show(block=True)
+
+
+mygunmet='#113344';myblue='#11aacc';mydkblue='#0000cc'
+myturq='#00ffff';myturq2='#11bbbb';myteal='#00ffcc';myteal2='#00ccaa'
+mygreen='#44bb44';mybritegrn='#00ff66';myfuscia='#ff00ff';myfuscia2='#dd0099'
+mypurp='#ff00cc';mypurp2='#9933ff';myred='#cc0000';myorange='#ffaa00'
+myorange2='#ff6600';myyell='#ffff00';myyell2='#ffcc00'
+
+mygunmet2='#052529'
+rgbback=mygunmet2
+
 #___________________________________________________________________#
 
 doani=True 		# animate the orbit, rad, and ang plots
@@ -532,37 +573,27 @@ dodata=False
 chunk=40
 chunksleep=0
 
-maxiters=32000	# max iterations
-minbored=4400	# minimum non-boring orbit iterations
+maxiters=24000	# max iterations
+minbored=2400	# minimum non-boring orbit iterations
 
 boreme=False 	#  False to pick a long orbit which escapes at the end
 maxrad=2.0		# defines the escape criterion
 
 trimend=4		# omits the final few iterations from some of the plots
 numbins=120		# no. of bins in the histograms
-numgrads=10		# how many slices to plot the animated orbit
+numgrads=12		# how many slices to plot the animated orbit
 
 figclose=False 	# close after plotting
 figsleep=0		# various sleep intervals
 finalsleep=0
 linesleep=0
 
-wid=1000;ht=700;xpos=10;ypos=100	# window size & posn
-wid=1200;ht=650;xpos=2100;ypos=100
 wid=2100;ht=1400;xpos=30;ypos=30
 wid=1800;ht=1100;xpos=30;ypos=30
 
-mygunmet='#113344';myblue='#11aacc';mydkblue='#0000cc'
-myturq='#00ffff';myturq2='#11bbbb';myteal='#00ffcc';myteal2='#00ccaa'
-mygreen='#44bb44';mybritegrn='#00ff66';myfuscia='#ff00ff';myfuscia2='#dd0099'
-mypurp='#ff00cc';mypurp2='#9933ff';myred='#cc0000';myorange='#ffaa00'
-myorange2='#ff6600';myyell='#ffff00';myyell2='#ffcc00'
-
-mygunmet2='#052529'
-rgbback=mygunmet2
-
-mymand=Mandel(boreme,minbored,xpos,ypos,wid,ht,figsleep,finalsleep)
+mymand=Mandel(doani,doloop,dosave,doang,angerror,dodata,chunk,chunksleep,maxiters,minbored,boreme,maxrad,trimend,numbins,numgrads,figclose,figsleep,finalsleep,linesleep,wid,ht,xpos,ypos)
 mymand.plotme()
+
 #___________________________________________________________________#
 
 """
