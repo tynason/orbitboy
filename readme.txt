@@ -34,6 +34,7 @@ What winds up being interesting in looking at these displays is the self-similar
 
 The peaks in the Fourier spectrum look self-similar; but this is just what you would expect. Of course it must be so, since the dynamics of the orbit itself is self-similar.
 
+There is a bug somewhere in the windowing part that causes the window to shrink vertically with each new (p,q).
 _______________________________________
 
 Notes on params:
