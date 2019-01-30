@@ -565,7 +565,7 @@ rgbback=mygunmet2
 
 doani=True 		# animate the orbit, rad, and ang plots
 doloop=True		# loop thru random orbits, not just one
-dosave=True 	# save params to DB or file, and save png
+dosave=False 	# save params to DB or file, and save png
 doang=False 	# external angle, not implemented yet
 angerror='none'
 
