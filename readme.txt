@@ -21,7 +21,7 @@ So the boring/non-boring pseudocode in the script is:
 		if it escapes only after a long time, it's interesting:
 			plot the orbit
 			plot histograms of rad (distance from origin) and external angle
-			plot fourier transform of same to see preiodicity
+			plot fourier transform of same to see periodicity
 
 Now, discrete statistics are a little funny, you can never really trust them like their analog counterparts. If the sampling rate is too low you lose information and get aliasing, and if the time series is too short you will only ever get craggy looking data whether you are in direct or transform space. 
 
@@ -33,8 +33,6 @@ So by selecting a longer minbored you will get time series with a long sample an
 What winds up being interesting in looking at these displays is the self-similarity in the statistics. The radius plot, its transform, looks similar to the angle plot or its transform.
 
 The peaks in the Fourier spectrum look self-similar; but this is just what you would expect. Of course it must be so, since the dynamics of the orbit itself is self-similar.
-
-There is a bug somewhere in the windowing part that causes the window to shrink vertically with each new (p,q).
 _______________________________________
 
 Notes on params:
@@ -72,12 +70,12 @@ You can create the mysql db as follows:
 	create database mandel;
 	use mandel;
 	
-	create table orbit (
-	orbit_id int not null auto_increment,
-	p varchar(25), q varchar(25), kappa int(10), maxrad varchar(10),
-	radavg varchar(25), raddev varchar(25), angavg varchar(25), angdev varchar(25),
-	primary key (orbit_id)
-	);
+create table orbit (
+orbit_id int not null auto_increment,
+p varchar(25), q varchar(25), kappa int(10), maxrad varchar(10),
+radavg varchar(25), raddev varchar(25), angavg varchar(25), angdev varchar(25),
+primary key (orbit_id)
+);
 
 Then put your pw in the code in place of YOURMYSQLPASSWORD.
 
