@@ -16,45 +16,37 @@ import mysql.connector
 #___________________________________________________________________#
 
 class Mandel(object):
+	"Mandelbrot orbit plotting"
 	def __init__(self,doani,doloop,dosave,doang,angerror,dodata,chunk,chunksleep,maxiters,minbored,boreme,maxrad,trimend,numbins,numgrads,figclose,figsleep,finalsleep,linesleep,wid,ht,xpos,ypos):
 		self.doani=doani
 		self.doloop=doloop
-
 		self.dosave=dosave
 		self.doang=doang
-
 		self.angerror=angerror
 		self.dodata=dodata
-
 		self.chunk=chunk
 		self.chunksleep=chunksleep
-
 		self.maxiters=maxiters
 		self.minbored=minbored
-
 		self.boreme=boreme
 		self.maxrad=maxrad
-
 		self.trimend=trimend
 		self.numbins=numbins
-
 		self.numgrads=numgrads
 		self.figclose=figclose
-
 		self.figsleep=figsleep
 		self.finalsleep=finalsleep
 		self.linesleep=linesleep
-
 		self.wid=wid
 		self.ht=ht
 		self.xpos=xpos
 		self.ypos=ypos
 
 	# https://matplotlib.org/users/customizing.html
-	mpl.rcParams['font.size']=8
-	mpl.rcParams['axes.labelsize']=8
-	mpl.rcParams['xtick.color']='#ffffff'
-	mpl.rcParams['ytick.color']='#ffffff'
+	mpl.rcParams['font.size']=7
+	mpl.rcParams['axes.labelsize']=7
+	mpl.rcParams['xtick.color']='#aaaaaa'
+	mpl.rcParams['ytick.color']='#aaaaaa'
 	mpl.rcParams['lines.linewidth']=0.4
 
 	def getcolor(self):
@@ -83,7 +75,7 @@ class Mandel(object):
 			params=[];xdata=[];ydata=[];raddata=[];angdata=[]
 			xstats=[];ystats=[];radstats=[];angstats=[];ang2data=[]
 
-			flip=x=np.random.random_integers(1,6)
+			flip=x=np.random.random_integers(1,5)
 			if flip==1: # 5 period attractive
 				cx=np.random.uniform(0.355,0.360);cy=np.random.uniform(0.315,0.400)
 			elif flip==2: # 5 period repulsive
@@ -177,7 +169,7 @@ class Mandel(object):
 				currxlim=ax.get_xlim();currylim=ax.get_ylim()
 				ax.clear();ax.patch.set_facecolor(currcolor)
 				ax.set_title(currtitle,loc='left',color=mybritegrn)
-				ax.grid(True);ax.patch.set_alpha(1.0)
+				ax.grid(False);ax.patch.set_alpha(1.0)
 				ax.set_xlabel(currxlabel,color=mybritegrn)
 				ax.set_ylabel(currylabel,color=mybritegrn)
 				#ax.set_xlim(currxlim);ax.set_ylim(currylim)
@@ -189,7 +181,7 @@ class Mandel(object):
 			currxlim=ax.get_xlim();currylim=ax.get_ylim()
 			ax.clear();ax.patch.set_facecolor(currcolor)
 			ax.set_title(currtitle,loc='left',color=mybritegrn)
-			ax.grid(True);ax.patch.set_alpha(1.0)
+			ax.grid(False);ax.patch.set_alpha(1.0)
 			ax.set_xlabel(currxlabel,color=mybritegrn)
 			ax.set_ylabel(currylabel,color=mybritegrn)
 			ax.set_xlim(currxlim);ax.set_ylim(currylim)
@@ -218,11 +210,20 @@ class Mandel(object):
 			ax.patch.set_facecolor(rgbback)
 			ax.patch.set_alpha(1.0)
 
+
+
+
+
 		win = plt.gcf().canvas.manager.window
 		fig.canvas.manager.window.wm_geometry('%dx%d%+d%+d' % (self.wid,self.ht,self.xpos,self.ypos))
 		fig.patch.set_facecolor(rgbback)
 		plt.tight_layout(pad=0.1,w_pad=0.1,h_pad=0.5)
 		fig.subplots_adjust(top=0.935)
+
+
+
+
+
 		nice=[];xnice=[];ynice=[] #list of non-boring orbits
 
 		while True:
@@ -559,6 +560,8 @@ mypurp='#ff00cc';mypurp2='#9933ff';myred='#cc0000';myorange='#ffaa00'
 myorange2='#ff6600';myyell='#ffff00';myyell2='#ffcc00'
 
 mygunmet2='#052529'
+mygunmet2='#052529'
+
 rgbback=mygunmet2
 
 #___________________________________________________________________#
@@ -588,11 +591,16 @@ figsleep=0		# various sleep intervals
 finalsleep=0
 linesleep=0
 
-wid=2100;ht=1400;xpos=30;ypos=30
-wid=1800;ht=1100;xpos=30;ypos=30
+wid=1800;ht=1200;xpos=0;ypos=0
 
-mymand=Mandel(doani,doloop,dosave,doang,angerror,dodata,chunk,chunksleep,maxiters,minbored,boreme,maxrad,trimend,numbins,numgrads,figclose,figsleep,finalsleep,linesleep,wid,ht,xpos,ypos)
-mymand.plotme()
+
+
+
+while True:
+	mymand=Mandel(doani,doloop,dosave,doang,angerror,dodata,chunk,chunksleep,maxiters,minbored,boreme,maxrad,trimend,numbins,numgrads,figclose,figsleep,finalsleep,linesleep,wid,ht,xpos,ypos)
+	print(mymand.__doc__)
+	mymand.plotme()
+
 
 #___________________________________________________________________#
 
