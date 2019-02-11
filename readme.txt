@@ -72,10 +72,9 @@ You can create the mysql db as follows:
 	
 create table orbit (
 orbit_id int not null auto_increment,
-p varchar(25), q varchar(25), kappa int(10), maxrad varchar(10),
-radavg varchar(25), raddev varchar(25), angavg varchar(25), angdev varchar(25),
-primary key (orbit_id)
-);
+p double, q double, kappa int, maxrad float, radavg double,
+raddev double, angavg double, angdev double, 
+primary key (orbit_id));
 
 Then put your pw in the code in place of YOURMYSQLPASSWORD.
 
