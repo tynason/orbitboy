@@ -101,3 +101,6 @@ To store the points of each orbit with the foreign key of the orbit_id create th
 	foreign key (orbit_id) REFERENCES orbit(orbit_id)
 	);
 
+Then set
+dopoints=True 	# save entire orbit points to DB
+
