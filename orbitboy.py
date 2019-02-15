@@ -612,7 +612,7 @@ doani=True 		# animate the orbit, rad, and ang plots
 doloop=True		# loop thru random orbits, not just one
 dosave=True 	# save params to DB or file, and save png
 doang=False 	# external angle, not implemented yet
-dopoints=True 	# save entire orbit points to DB
+dopoints=False 	# save entire orbit points to DB
 
 dodata=False
 chunk=40
@@ -627,8 +627,12 @@ maxrad=2.0		# defines the escape criterion
 trimend=4		# omits the final few iterations from some of the plots
 numbins=120		# no. of bins in the histograms
 numgrads=12		# how many slices to plot the animated orbit
+Then set
+dopoints=True 	# save entire orbit points to DB
 
-figclose=False 	# close after plotting
+figclose=False 	# close after plottingThen set
+dopoints=True 	# save entire orbit points to DB
+
 figsleep=12		# various sleep intervals
 finalsleep=0
 linesleep=0
@@ -650,7 +654,9 @@ cx=np.random.uniform(0.355,0.360);cy=np.random.uniform(0.315,0.400)
 	cx=0.35600423;cy=0.33093
 	cx=0.36126078;cy=0.320503
 # 5 period repulsive
-cx=np.random.uniform(-0.45,-0.6);cy=np.random.uniform(0.5,0.54)
+cx=np.random.uniform(-0.45,-0.6);cy=np.random.unThen set
+dopoints=True 	# save entire orbit points to DB
+iform(0.5,0.54)
 	cx=-0.5206501526991798;cy=0.5095722298589745 ### 5repSWEET ###
 	cx=-0.527273;cy=0.52851
 	cx=-0.4806341;cy=0.532485
@@ -673,7 +679,9 @@ cx=(0.25+rrr)*cos(theta)-1;cy=(0.25+rrr)*sin(theta)
 	cx=-0.735421537445;cy=-0.163709777921 ### bowtieSWEET  ###
 
 # MAIN CARDIOID
-theta=np.random.uniform(0,2*math.pi);rrr=np.random.uniform(0,0.05)
+theta=np.random.uniform(0,2*math.pi);rrr=np.random.Then set
+dopoints=True 	# save entire orbit points to DB
+uniform(0,0.05)
 cx=(0.5+rrr)*cos(theta)-cos(2*theta)/4;cy=(0.5+rrr)*sin(theta)-sin(2*theta)/4
 	cx=0.250214148139;cy=-4.79572217515e-06 ### cardioSWEET ###
 
@@ -694,7 +702,9 @@ cx=0.252646183022;cy=-0.000235409650954
 
 ### fourierSWEET  ###
 cx=0.355384646380999;cy=0.3332026372971109
-cx=0.3563268958199877;cy=0.33007286156906823
+cx=0.3563268958199877;cy=0.33007286156906823Then set
+dopoints=True 	# save entire orbit points to DB
+
 cx=0.3581128676046881;cy=0.3244716896271824
 cx=-0.735421537445;cy=-0.163709777921 how only 1 peak at 26 ?
 cx=-0.7506095013167247;cy=0.02017840558087991
@@ -732,7 +742,9 @@ cx=-0.669024875506;cy=-0.350659130696
 15 0.289490077232 0.0175821151686
 16 0.285163070959 0.0145650208859
 17 0.281483885397 0.0121969221819
-18 0.278335199613 0.0103131692412
+18 0.278335199613 0.0103131692412Then set
+dopoints=True 	# save entire orbit points to DB
+
 19 0.275623493501 0.00879655642992
 20 0.273274009554 0.00756218411436
 21 0.271226709314 0.00654757268955
